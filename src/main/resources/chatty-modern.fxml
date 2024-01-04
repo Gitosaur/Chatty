@@ -9,10 +9,10 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
@@ -21,15 +21,16 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-<Pane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
-   <children>
+
+<BorderPane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
+   <center>
       <StackPane>
          <children>
             <VBox fx:id="contentPane">
                <children>
                   <StackPane alignment="TOP_RIGHT">
                      <children>
-                        <TabPane id="tabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" tabClosingPolicy="UNAVAILABLE" tabMinWidth="75.0">
+                        <TabPane id="tabPane" fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" tabMinWidth="75.0">
                           <tabs>
                             <Tab text="General">
                                  <content>
@@ -71,14 +72,20 @@
                                  <content>
                                     <AnchorPane>
                                        <children>
-                                          <GridPane hgap="5.0" prefHeight="533.0" prefWidth="566.0" vgap="5.0">
+                                          <VBox layoutX="18.0" layoutY="88.0" spacing="10.0">
+                                             <children>
+                                                <RadioButton fx:id="receiveInfoInClientRadioButton" mnemonicParsing="false" prefHeight="17.0" prefWidth="200.0" text="Receive chat information in client" />
+                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client" />
+                                             </children>
+                                          </VBox>
+                                          <GridPane hgap="5.0" layoutY="1.0" vgap="5.0">
                                             <columnConstraints>
-                                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" />
-                                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
-                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" />
+                                              <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" />
+                                              <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" />
+                                                <ColumnConstraints hgrow="NEVER" maxWidth="-Infinity" minWidth="10.0" />
                                             </columnConstraints>
                                             <rowConstraints>
-                                              <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                              <RowConstraints maxHeight="1.7976931348623157E308" valignment="CENTER" />
                                               <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
                                               <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
                                                 <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
@@ -87,7 +94,7 @@
                                             </rowConstraints>
                                              <children>
                                                 <Label minHeight="25.0" minWidth="145.0" prefHeight="25.0" prefWidth="145.0" text="Websocket Server URL" />
-                                                <TextField fx:id="websocketServerUrlTextField" onKeyTyped="#websocketServerUrlOnType" promptText="ws://example.com:8000" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                                <TextField fx:id="websocketServerUrlTextField" onKeyTyped="#websocketServerUrlOnType" prefWidth="214.0" promptText="ws://example.com:8000" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
                                                 <HBox spacing="5.0" GridPane.columnIndex="2">
                                                    <children>
                                                       <Button fx:id="settingsConnectButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#setUrlAndConnect" text="Connect" />
@@ -99,12 +106,6 @@
                                                 <Insets left="20.0" right="20.0" top="20.0" />
                                              </padding>
                                           </GridPane>
-                                          <VBox layoutX="18.0" layoutY="88.0" spacing="10.0">
-                                             <children>
-                                                <RadioButton fx:id="receiveInfoInClientRadioButton" mnemonicParsing="false" prefHeight="17.0" prefWidth="200.0" text="Receive chat information in client" />
-                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client" />
-                                             </children>
-                                          </VBox>
                                        </children>
                                     </AnchorPane>
                                  </content>
@@ -126,7 +127,7 @@
                         </Button>
                      </children>
                   </StackPane>
-                  <HBox alignment="CENTER_LEFT" prefHeight="0.0" VBox.vgrow="NEVER">
+                  <HBox alignment="CENTER_LEFT" maxHeight="30.0" prefHeight="30.0" VBox.vgrow="NEVER">
                      <children>
                          <ToggleSwitch fx:id="activeToggle" nodeOrientation="LEFT_TO_RIGHT" prefHeight="18.0" prefWidth="70.0" text="active" viewOrder="1.0" HBox.hgrow="NEVER" />
                         <Region prefHeight="200.0" prefWidth="50.0" />
@@ -152,5 +153,5 @@
             <Region fx:id="opaqueLayer" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: rgba(0,0,0,0.5);" visible="false" />
          </children>
       </StackPane>
-   </children>
-</Pane>
+   </center>
+</BorderPane>

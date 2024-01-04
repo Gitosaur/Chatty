@@ -48,7 +48,7 @@ import java.util.*;
 )
 public class Chatty extends ExtensionForm implements Initializable {
 
-    private static final String DEFUALT_WS_SERVER_URL = "ws://localhost:8000";
+    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
 
     private WebsocketClient ws;
 
@@ -100,7 +100,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         chatroomsView.setRoot(new TreeItem());
         chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
 
-        websocketServerUrlTextField.setText(DEFUALT_WS_SERVER_URL);
+        websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
         activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.active = newValue;
@@ -121,7 +121,6 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.showHotelsInClient = newValue;
         });
 
-        makeWindowMoveable();
     }
 
     @Override
@@ -168,25 +167,23 @@ public class Chatty extends ExtensionForm implements Initializable {
             String sex = packet.readString();
             String mission = packet.readString();
             this.habboInfo = new HabboInfo(id, name, figure, sex, mission, hotel);
-            this.connectToWsServer(DEFUALT_WS_SERVER_URL);
+            this.connectToWsServer(DEFAULT_WS_SERVER_URL);
         });
         sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
     }
 
     private void connectToWsServer(String url) {
         try {
-            this.connectToggleButton.setDisable(true);
-            ws = new WebsocketClient(new URI(url), this);
             Platform.runLater(() -> {
+                this.connectToggleButton.setDisable(true);
                 this.serverConnectStatusLabel.setText("connecting...");
                 this.serverStatusCircle.setFill(new Color(1.0, 0.55, 0.0, 1.0));
             });
+            ws = new WebsocketClient(new URI(url), this);
             ws.connect();
         } catch (URISyntaxException e) {
-            Optional<ButtonType> result = showErrorDialog("Invalid URL syntax");
-            if(result.isPresent()){
-                unblurMainWindow();
-            }
+            showErrorDialog("Invalid URL syntax");
+            unblurMainWindow();
         }
     }
 
@@ -212,10 +209,8 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         if(type.contains("_error")) {
             Platform.runLater(() -> {
-                Optional<ButtonType> result = showErrorDialog((String) msg.getData().get("message"));
-                if(result.isPresent()){
-                    unblurMainWindow();
-                }
+                showErrorDialog((String) msg.getData().get("message"));
+                unblurMainWindow();
             });
         }
 
@@ -371,7 +366,8 @@ public class Chatty extends ExtensionForm implements Initializable {
             return false;
 
         for(HabboInfo user: r.getUsers()) {
-            if(user.getHabboName().equals(this.habboInfo.getHabboName())){
+            if(user.getHabboName().equals(this.habboInfo.getHabboName()) &&
+            user.getHotel() == this.habboInfo.getHotel()){
                 return true;
             }
         }
@@ -445,10 +441,8 @@ public class Chatty extends ExtensionForm implements Initializable {
 
             //check if habbo is already member of room
             if(room.getUsers().contains(this.habboInfo)) {
-                Optional<ButtonType> result = showErrorDialog("You are already member of " + shortenString(roomName, 7));
-                if(result.isPresent()){
-                    unblurMainWindow();
-                }
+                showErrorDialog("You are already member of " + shortenString(roomName, 7));
+                unblurMainWindow();
                 return;
             }
 
@@ -509,15 +503,14 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
     public void setDefaultServerURL(ActionEvent actionEvent) {
-        this.websocketServerUrlTextField.setText(DEFUALT_WS_SERVER_URL);
+        this.websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
+        this.settingsConnectButton.setDisable(isNewAndOrNotConnected(DEFAULT_WS_SERVER_URL));
     }
 
     public void onWebsocketError() {
         Platform.runLater(() -> {
-            Optional<ButtonType> result = this.showErrorDialog("Could not connect to Server");
-            if(result.isPresent()){
-                unblurMainWindow();
-            }
+            this.showErrorDialog("Could not connect to Server");
+            unblurMainWindow();
         });
     }
 
@@ -526,10 +519,9 @@ public class Chatty extends ExtensionForm implements Initializable {
         if(!ws.isConnected()){
             this.connectToWsServer(wsUrl);
         }else {
-
             Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
+            unblurMainWindow();
             result.ifPresent(res -> {
-                unblurMainWindow();
                 if(res.getButtonData().isDefaultButton()) this.ws.close();
             });
 
@@ -539,18 +531,19 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     public void websocketServerUrlOnType(KeyEvent actionEvent) {
         String wsUrl = this.websocketServerUrlTextField.getText();
-        if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
-             !ws.getURI().toString().equals(wsUrl)){
-            this.settingsConnectButton.setDisable(false);
-        }else {
-            this.settingsConnectButton.setDisable(true);
-        }
+        this.settingsConnectButton.setDisable(isNewAndOrNotConnected(wsUrl));
     }
+
+    private boolean isNewAndOrNotConnected(String newUrl){
+        return (!ws.getURI().toString().equals(newUrl) || ws.isConnected()) &&
+                ws.getURI().toString().equals(newUrl);
+    }
+
 
     private Optional<String> showPasswordDialog(String headerText) {
         DialogPane dialogPane = null;
         try {
-            dialogPane = FXMLLoader.load(getClass().getResource("./dialogs/room-password-dialog.fxml"));
+            dialogPane = FXMLLoader.load(getClass().getResource("/dialogs/room-password-dialog.fxml"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -583,7 +576,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         DialogPane dialogPane = null;
         try {
-            dialogPane = FXMLLoader.load(getClass().getResource("./dialogs/create-room-dialog.fxml"));
+            dialogPane = FXMLLoader.load(getClass().getResource("/dialogs/create-room-dialog.fxml"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -625,11 +618,11 @@ public class Chatty extends ExtensionForm implements Initializable {
         result.ifPresent(namePw -> {
             String name = namePw.getKey();
             if(name.length() > 15)
-                name = name.substring(15);
+                name = shortenString(name, 15);
 
             String pw = namePw.getValue();
             if(pw.length() > 15)
-                pw = pw.substring(15);
+                pw = shortenString(name, 15);
 
             sendCreateRoomRequest(name, pw);
         });
@@ -702,12 +695,11 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         tabPane.setOnMouseDragged(event -> {
             //only makes it draggable at the top bar
-            if(yOffset[0] > 50 || xOffset[0] < 200)
-                return;
-
-            stage.setX(event.getScreenX() - xOffset[0]);
-            stage.setY(event.getScreenY() - yOffset[0]);
-            stage.getScene().setCursor(Cursor.CLOSED_HAND);
+            if(yOffset[0] < 57 && xOffset[0] > 212 && xOffset[0] < 500) {
+                stage.setX(event.getScreenX() - xOffset[0]);
+                stage.setY(event.getScreenY() - yOffset[0]);
+                stage.getScene().setCursor(Cursor.CLOSED_HAND);
+            }
         });
 
         tabPane.setOnMouseReleased(event -> {
@@ -719,7 +711,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     protected Optional<ButtonType> showConfirmDialog(String headerText) {
         DialogPane dialogPane = null;
         try {
-            dialogPane = FXMLLoader.load(getClass().getResource("./dialogs/confirm-dialog.fxml"));
+            dialogPane = FXMLLoader.load(getClass().getResource("/dialogs/confirm-dialog.fxml"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -744,7 +736,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         DialogPane dialogPane = null;
         try {
-            dialogPane = FXMLLoader.load(getClass().getResource("./dialogs/error-dialog.fxml"));
+            dialogPane = FXMLLoader.load(getClass().getResource("/dialogs/error-dialog.fxml"));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -66,6 +66,18 @@
      </dependencies>
 
   <build>
+    <resources>
+        <!-- Embedded FXML and CSS resources -->
+        <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**/*.fxml</include>
+                <include>**/*.png</include>
+                <include>**/*.css</include>
+            </includes>
+        </resource>
+    </resources>
     <plugins>
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
