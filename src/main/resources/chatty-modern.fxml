@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+<?import org.controlsfx.control.ToggleSwitch?>
+
+<Pane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
+   <children>
+      <StackPane>
+         <children>
+            <VBox fx:id="contentPane">
+               <children>
+                  <StackPane alignment="TOP_RIGHT">
+                     <children>
+                        <TabPane id="tabPane" fx:id="tabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" tabClosingPolicy="UNAVAILABLE" tabMinWidth="75.0">
+                          <tabs>
+                            <Tab text="General">
+                                 <content>
+                                    <VBox>
+                                       <children>
+                                          <VBox VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <HBox alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+                                                   <children>
+                                                      <Label minWidth="-Infinity" prefHeight="37.0" prefWidth="131.0" text="Chatrooms" textFill="WHITE">
+                                                         <font>
+                                                            <Font name="Agency FB" size="26.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Region HBox.hgrow="ALWAYS" />
+                                                      <HBox alignment="CENTER" spacing="10.0">
+                                                         <children>
+                                                            <Button fx:id="createRoomButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#createRoomButtonPressed" text="Create chatroom" />
+                                                            <Button fx:id="connectToggleButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#toggleConnect" text="connect" />
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </HBox>
+                                                <TreeView fx:id="chatroomsView" VBox.vgrow="ALWAYS">
+                                                   <VBox.margin>
+                                                      <Insets top="5.0" />
+                                                   </VBox.margin>
+                                                </TreeView>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                       <padding>
+                                          <Insets left="20.0" right="20.0" top="20.0" />
+                                       </padding>
+                                    </VBox>
+                                 </content>
+                              </Tab>
+                            <Tab text="Settings">
+                                 <content>
+                                    <AnchorPane>
+                                       <children>
+                                          <GridPane hgap="5.0" prefHeight="533.0" prefWidth="566.0" vgap="5.0">
+                                            <columnConstraints>
+                                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" />
+                                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" />
+                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="10.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                              <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                              <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                              <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                                <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                                <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                                <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                             <children>
+                                                <Label minHeight="25.0" minWidth="145.0" prefHeight="25.0" prefWidth="145.0" text="Websocket Server URL" />
+                                                <TextField fx:id="websocketServerUrlTextField" onKeyTyped="#websocketServerUrlOnType" promptText="ws://example.com:8000" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                                <HBox spacing="5.0" GridPane.columnIndex="2">
+                                                   <children>
+                                                      <Button fx:id="settingsConnectButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#setUrlAndConnect" text="Connect" />
+                                                      <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#setDefaultServerURL" text="Set default" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                             <padding>
+                                                <Insets left="20.0" right="20.0" top="20.0" />
+                                             </padding>
+                                          </GridPane>
+                                          <VBox layoutX="18.0" layoutY="88.0" spacing="10.0">
+                                             <children>
+                                                <RadioButton fx:id="receiveInfoInClientRadioButton" mnemonicParsing="false" prefHeight="17.0" prefWidth="200.0" text="Receive chat information in client" />
+                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client" />
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </Tab>
+                          </tabs>
+                        </TabPane>
+                        <Button mnemonicParsing="false" onAction="#minimizeWindow" prefHeight="40.0" prefWidth="40.0" text="_">
+                           <StackPane.margin>
+                              <Insets bottom="10.0" left="10.0" right="55.0" top="10.0" />
+                           </StackPane.margin>
+                        </Button>
+                        <Button id="close-button" mnemonicParsing="false" onAction="#closeWindow" prefHeight="40.0" prefWidth="40.0" text="X">
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <StackPane.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </StackPane.margin>
+                        </Button>
+                     </children>
+                  </StackPane>
+                  <HBox alignment="CENTER_LEFT" prefHeight="0.0" VBox.vgrow="NEVER">
+                     <children>
+                         <ToggleSwitch fx:id="activeToggle" nodeOrientation="LEFT_TO_RIGHT" prefHeight="18.0" prefWidth="70.0" text="active" viewOrder="1.0" HBox.hgrow="NEVER" />
+                        <Region prefHeight="200.0" prefWidth="50.0" />
+                        <ToggleSwitch fx:id="alwaysOnTopToggle" nodeOrientation="LEFT_TO_RIGHT" prefHeight="18.0" prefWidth="112.0" text="Always on top" HBox.hgrow="NEVER" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <HBox alignment="CENTER" spacing="3.0">
+                           <children>
+                              <Circle fx:id="serverStatusCircle" fill="#ff8d00" radius="6.0" stroke="BLACK" strokeType="INSIDE" />
+                              <Label fx:id="serverConnectStatusLabel" text="Status">
+                                 <HBox.margin>
+                                    <Insets bottom="1.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </VBox>
+            <Region fx:id="opaqueLayer" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: rgba(0,0,0,0.5);" visible="false" />
+         </children>
+      </StackPane>
+   </children>
+</Pane>
