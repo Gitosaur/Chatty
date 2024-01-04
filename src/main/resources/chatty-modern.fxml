@@ -21,14 +21,13 @@
 <?import javafx.scene.text.Font?>
 <?import org.controlsfx.control.ToggleSwitch?>
 
-
-<BorderPane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
+<BorderPane id="mainPane" prefWidth="601.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
    <center>
-      <StackPane>
+      <StackPane prefWidth="599.0">
          <children>
-            <VBox fx:id="contentPane">
+            <VBox fx:id="contentPane" prefWidth="599.0">
                <children>
-                  <StackPane alignment="TOP_RIGHT">
+                  <StackPane alignment="TOP_RIGHT" VBox.vgrow="ALWAYS">
                      <children>
                         <TabPane id="tabPane" fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" tabMinWidth="75.0">
                           <tabs>
@@ -127,7 +126,7 @@
                         </Button>
                      </children>
                   </StackPane>
-                  <HBox alignment="CENTER_LEFT" maxHeight="30.0" prefHeight="30.0" VBox.vgrow="NEVER">
+                  <HBox alignment="CENTER_LEFT" fillHeight="false" maxHeight="124.0" prefHeight="30.0" prefWidth="599.0" VBox.vgrow="NEVER">
                      <children>
                          <ToggleSwitch fx:id="activeToggle" nodeOrientation="LEFT_TO_RIGHT" prefHeight="18.0" prefWidth="70.0" text="active" viewOrder="1.0" HBox.hgrow="NEVER" />
                         <Region prefHeight="200.0" prefWidth="50.0" />

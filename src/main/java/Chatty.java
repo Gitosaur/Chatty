@@ -96,9 +96,9 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
 
-        chatroomsView.setShowRoot(false);
-        chatroomsView.setRoot(new TreeItem());
-        chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
+        this.chatroomsView.setShowRoot(false);
+        this.chatroomsView.setRoot(new TreeItem());
+        this.chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
 
         websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
         activeToggle.setSelected(this.active);
