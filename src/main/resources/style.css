@@ -169,14 +169,17 @@
     -fx-background-color: linear-gradient(to bottom, rgba(255, 170, 170, 0.2), rgba(253, 74, 74, 0.3));
 }
 
-#close-button:hover, .button:cancel:hover {
+#close-button:hover, .button:cancel:hover, .leaveBtn:hover {
     -fx-background-color: linear-gradient(to bottom, rgba(255, 224, 224, 0.2), rgba(255, 104, 104, 0.3));
 }
 
-#close-button:pressed, .button:cancel:pressed {
+#close-button:pressed, .button:cancel:pressed, .leaveBtn:hover {
     -fx-background-color: linear-gradient(to bottom, rgba(255, 97, 97, 0.2), rgba(255, 54, 54, 0.3));
 }
 
+.leaveBtn {
+
+}
 
 
 /************************/

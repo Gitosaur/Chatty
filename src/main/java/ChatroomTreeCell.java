@@ -62,8 +62,11 @@ public class ChatroomTreeCell extends TreeCell<Object> {
             roomBox.getChildren().add(userCountBox);
 
             // icon for password
-            if(r.hasPassword())
-                roomBox.getChildren().add(GlyphsDude.createIcon(FontAwesomeIcon.LOCK));
+            if(r.hasPassword()) {
+                Text passwordIcon = GlyphsDude.createIcon(FontAwesomeIcon.LOCK);
+                passwordIcon.setFill(new Color(0.77, 0.77, 0.77, 1));
+                roomBox.getChildren().add(passwordIcon);
+            }
 
             //roomname
             Label roomNameLabel = new Label(Chatty.shortenString(r.getName(), 20));
@@ -75,6 +78,7 @@ public class ChatroomTreeCell extends TreeCell<Object> {
 
             if(r.getUsers().contains(chatty.getHabboInfo())){
                 Button leaveBtn = new Button("LEAVE");
+                leaveBtn.getStyleClass().add("leaveBtn");
                 roomBox.getChildren().add(leaveBtn);
                 leaveBtn.setOnMouseClicked(e -> {
                     Optional<ButtonType> result = chatty.showConfirmDialog("Do you want to leave " + Chatty.shortenString(r.getName(), 7));

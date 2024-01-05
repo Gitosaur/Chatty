@@ -72,8 +72,14 @@
                                        <children>
                                           <VBox layoutX="18.0" layoutY="88.0" spacing="10.0">
                                              <children>
-                                                <RadioButton fx:id="receiveInfoInClientRadioButton" mnemonicParsing="false" prefHeight="17.0" prefWidth="200.0" text="Receive chat information in client" />
-                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client" />
+                                                <RadioButton fx:id="receiveInfoInClientRadioButton" mnemonicParsing="false" prefHeight="19.0" prefWidth="227.0" text="Receive chat information in client">
+                                                   <font>
+                                                      <Font size="13.0" />
+                                                   </font></RadioButton>
+                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client">
+                                                   <font>
+                                                      <Font size="13.0" />
+                                                   </font></RadioButton>
                                              </children>
                                           </VBox>
                                           <GridPane hgap="5.0" layoutY="1.0" vgap="5.0">
@@ -91,7 +97,10 @@
                                                 <RowConstraints maxHeight="-Infinity" vgrow="SOMETIMES" />
                                             </rowConstraints>
                                              <children>
-                                                <Label minHeight="25.0" minWidth="145.0" prefHeight="25.0" prefWidth="145.0" text="Websocket Server URL" />
+                                                <Label minHeight="25.0" minWidth="145.0" prefHeight="25.0" prefWidth="145.0" text="Websocket Server URL">
+                                                   <font>
+                                                      <Font size="13.0" />
+                                                   </font></Label>
                                                 <TextField fx:id="websocketServerUrlTextField" onKeyTyped="#websocketServerUrlOnType" prefWidth="214.0" promptText="ws://example.com:8000" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
                                                 <HBox spacing="5.0" GridPane.columnIndex="2">
                                                    <children>
@@ -127,9 +136,15 @@
                   </StackPane>
                   <HBox alignment="CENTER_LEFT" fillHeight="false" maxHeight="124.0" prefHeight="30.0" prefWidth="599.0" VBox.vgrow="NEVER">
                      <children>
-                        <RadioButton fx:id="activeToggle" mnemonicParsing="false" text="active" />
+                        <RadioButton fx:id="activeToggle" mnemonicParsing="false" selected="true" text="active">
+                           <font>
+                              <Font size="13.0" />
+                           </font></RadioButton>
                         <Region prefHeight="200.0" prefWidth="50.0" />
-                        <RadioButton fx:id="alwaysOnTopToggle" mnemonicParsing="false" text="always on top" />
+                        <RadioButton fx:id="alwaysOnTopToggle" mnemonicParsing="false" prefHeight="19.0" prefWidth="112.0" text="always on top">
+                           <font>
+                              <Font size="13.0" />
+                           </font></RadioButton>
                         <Region HBox.hgrow="ALWAYS" />
                         <HBox alignment="CENTER" spacing="3.0">
                            <children>
@@ -138,6 +153,9 @@
                                  <HBox.margin>
                                     <Insets bottom="1.0" />
                                  </HBox.margin>
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
                               </Label>
                            </children>
                         </HBox>
