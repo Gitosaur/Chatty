@@ -44,7 +44,6 @@
 }
 
 
-
 /************************/
 /*      TREE VIEW       */
 /************************/
@@ -205,6 +204,22 @@
     -fx-background-color: -fx-accentColor;
 }
 
+
+
+/************************/
+/*      RADIO BUTTON    */
+/************************/
+
+
+.radio-button .radio {
+    -fx-background-color: -fx-base2;
+}
+
+.radio-button:selected .radio .dot {
+    -fx-background-color: -fx-accentColor;
+    -fx-background-insets: 0;
+
+}
 
 
 /************************/

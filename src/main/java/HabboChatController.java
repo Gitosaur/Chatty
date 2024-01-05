@@ -46,6 +46,10 @@ public class HabboChatController {
             spawnDummyInClient(this.infoDummy);
             respawnUserDummys();
         });
+
+        chatty.intercept(HMessage.Direction.TOCLIENT, "UserUpdate", hMessage -> {
+            updateHabboPosition(hMessage);
+        });
     }
 
 
@@ -112,6 +116,14 @@ public class HabboChatController {
     public void sendInformationMsg(String msg) {
         if(chatty.sendInformationMsgEnabled())
             chatty.sendToClient(new HPacket("Whisper", HMessage.Direction.TOCLIENT, this.infoDummy.id, msg, 0, this.infoDummyChatBubble, 0, -1));
+    }
+
+
+    private void updateHabboPosition(HMessage hMessage) {
+        //TODO track the user positions to send the messages (speech bubbles) at the correct positions
+//        HPacket packet = hMessage.getPacket();
+//        System.out.println(packet.toExpression());
+
     }
 
     private static class Dummy {

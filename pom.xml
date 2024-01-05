@@ -56,10 +56,18 @@
          </dependency>
 
         <!--   for toggle switch      -->
+<!--        <dependency>-->
+<!--            <groupId>org.controlsfx</groupId>-->
+<!--            <artifactId>controlsfx</artifactId>-->
+<!--            <version>11.2.0</version>-->
+<!--        </dependency>-->
+
+
+         <!-- https://mvnrepository.com/artifact/de.jensd/fontawesomefx -->
         <dependency>
-            <groupId>org.controlsfx</groupId>
-            <artifactId>controlsfx</artifactId>
-            <version>11.2.0</version>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx</artifactId>
+            <version>8.9</version>
         </dependency>
 
 

@@ -29,7 +29,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Pair;
 import message.ChatMsg;
 import message.ChatMsgData;
-import org.controlsfx.control.ToggleSwitch;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +47,7 @@ import java.util.*;
 )
 public class Chatty extends ExtensionForm implements Initializable {
 
-    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
+    private static final String DEFAULT_WS_SERVER_URL = "ws://49.13.194.116:8000";
 
     private WebsocketClient ws;
 
@@ -69,8 +68,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public Button connectToggleButton;
     @FXML public Button settingsConnectButton;
     @FXML public Button createRoomButton;
-    @FXML public ToggleSwitch activeToggle;
-    @FXML public ToggleSwitch alwaysOnTopToggle;
+    @FXML public RadioButton activeToggle;
+    @FXML public RadioButton alwaysOnTopToggle;
 
     @FXML public Circle serverStatusCircle;
     @FXML public Label serverConnectStatusLabel;
@@ -311,6 +310,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         Chatroom chatroom = chatrooms.get(room);
         if(chatroom != null){
             chatroom.addUser(userInfo);
+        }else {
+            //TODO create room
         }
         this.habboChatController.addDummy(username, hotel, room, mission, figure, sex);
         boolean isSelf = username.equals(this.habboInfo.getHabboName()) && hotel == this.habboInfo.getHotel();
@@ -417,10 +418,6 @@ public class Chatty extends ExtensionForm implements Initializable {
             }
         }
 
-        //add empty cells at bottom
-        for(int i = 0; i < 5; i++){
-            rootItem.getChildren().add(new TreeItem());
-        }
         this.chatroomsView.setRoot(rootItem);
     }
 
@@ -477,6 +474,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         }else {
             System.out.println("Connection failed");
             this.habboChatController.sendInformationMsg("Connection to server failed");
+            showErrorDialog((String) data.get("message"));
+            ws.setConnected(false);
         }
     }
 

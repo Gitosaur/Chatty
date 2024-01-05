@@ -17,7 +17,7 @@ public class Chatroom {
     private boolean expanded;
 
 
-    public Chatroom() {
+    private Chatroom() {
         this.users = new HashMap<>();
         expanded = false;
     }

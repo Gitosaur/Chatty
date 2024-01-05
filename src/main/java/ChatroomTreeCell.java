@@ -1,3 +1,6 @@
+import de.jensd.fx.glyphs.GlyphsDude;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import entities.Chatroom;
 import entities.HabboInfo;
 import javafx.event.EventHandler;
@@ -8,8 +11,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import org.controlsfx.glyphfont.FontAwesome;
-import org.controlsfx.glyphfont.Glyph;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.text.Text;
+
 
 import java.util.Optional;
 
@@ -37,11 +42,10 @@ public class ChatroomTreeCell extends TreeCell<Object> {
             HBox roomBox = new HBox();
             roomBox.setSpacing(10);
             roomBox.setAlignment(Pos.CENTER_LEFT);
-
-            Glyph expandIcon = new Glyph("FontAwesome", r.isExpanded() ? FontAwesome.Glyph.CARET_DOWN : FontAwesome.Glyph.CARET_RIGHT);
+            Text expandIcon = GlyphsDude.createIcon(r.isExpanded() ? FontAwesomeIcon.CARET_DOWN : FontAwesomeIcon.CARET_RIGHT);
             expandIcon.getStyleClass().add("expandIcon");
+            expandIcon.setFill(new Color(0.77, 0.77, 0.77, 1));
             expandIcon.setOnMouseClicked(e -> {
-                System.out.println("expanding");
                 this.getTreeItem().setExpanded(!r.isExpanded());
                 r.setExpanded(!r.isExpanded());
                 e.consume();
@@ -50,13 +54,16 @@ public class ChatroomTreeCell extends TreeCell<Object> {
 
             HBox userCountBox = new HBox();
             userCountBox.setAlignment(Pos.CENTER);
-            userCountBox.getChildren().add(new Glyph("FontAwesome", FontAwesome.Glyph.USER));
+            Text userIcon = GlyphsDude.createIcon(FontAwesomeIcon.USER);
+            userIcon.setFill(new Color(0.77, 0.77, 0.77, 1));
+            userIcon.getStyleClass().add("icon");
+            userCountBox.getChildren().add(userIcon);
             userCountBox.getChildren().add(new Label(String.valueOf(r.getUsers().size())));
             roomBox.getChildren().add(userCountBox);
 
             // icon for password
             if(r.hasPassword())
-                roomBox.getChildren().add(new Glyph("FontAwesome", FontAwesome.Glyph.LOCK));
+                roomBox.getChildren().add(GlyphsDude.createIcon(FontAwesomeIcon.LOCK));
 
             //roomname
             Label roomNameLabel = new Label(Chatty.shortenString(r.getName(), 20));
