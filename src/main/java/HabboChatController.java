@@ -146,8 +146,10 @@ public class HabboChatController {
 
     private void updateHabboPosition(HMessage hMessage) {
         //track the user positions to send the messages (speech bubbles) at the correct positions
-        HPacket packet = hMessage.getPacket();
+        if(chatty == null || chatty.getHabboInfo() == null)
+            return;
 
+        HPacket packet = hMessage.getPacket();
         packet.readInteger();
         int index = packet.readInteger();
         if(index == chatty.getHabboInfo().getIndex()) {

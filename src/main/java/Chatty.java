@@ -16,7 +16,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
@@ -114,29 +113,21 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     private void initializeRadioButtons() {
         this.activeToggle.setSelected(this.active);
-        this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            this.active = newValue;
-        });
+        this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.active = newValue);
 
         this.alwaysOnTopToggle.setSelected(false);
-        this.alwaysOnTopToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            this.stage.setAlwaysOnTop(newValue);
-        });
+        this.alwaysOnTopToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.stage.setAlwaysOnTop(newValue));
 
         this.receiveInfoInClientRadioButton.setSelected(this.receiveInformationInClient);
-        this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            this.receiveInformationInClient = newValue;
-        });
+        this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> this.receiveInformationInClient = newValue);
 
         this.showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
-        this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            this.showHotelsInClient = newValue;
-        });
+        this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> this.showHotelsInClient = newValue);
 
         this.showTypingSpeechBubbleToggle.setSelected(this.showTypingSpeechBubble);
-        this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            this.showTypingSpeechBubble = newValue;
-        });
+        this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.showTypingSpeechBubble = newValue);
+
+        this.websocketServerUrlTextField.textProperty().addListener((observable, oldValue, newValue) -> websocketServerUrlOnChange(newValue));
 
     }
 
@@ -555,9 +546,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.updateUi();
     }
 
-    public void websocketServerUrlOnType(KeyEvent actionEvent) {
-        String wsUrl = this.websocketServerUrlTextField.getText();
-        this.settingsConnectButton.setDisable(isNewAndOrNotConnected(wsUrl));
+    public void websocketServerUrlOnChange(String text) {
+        this.settingsConnectButton.setDisable(text.isEmpty() || isNewAndOrNotConnected(text));
     }
 
     private boolean isNewAndOrNotConnected(String newUrl){
