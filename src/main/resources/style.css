@@ -177,8 +177,9 @@
     -fx-background-color: linear-gradient(to bottom, rgba(255, 97, 97, 0.2), rgba(255, 54, 54, 0.3));
 }
 
-.leaveBtn {
-
+#serverStatusCircle {
+    -fx-stroke: transparent;
+    -fx-stroke-width: 0;
 }
 
 

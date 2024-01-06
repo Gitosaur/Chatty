@@ -15,6 +15,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
@@ -47,6 +49,7 @@ import java.util.*;
 )
 public class Chatty extends ExtensionForm implements Initializable {
 
+//    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
     private static final String DEFAULT_WS_SERVER_URL = "ws://49.13.194.116:8000";
 
     private WebsocketClient ws;
@@ -61,6 +64,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private boolean active; //secret chat active
     private boolean showHotelsInClient;
     private boolean receiveInformationInClient;
+    private boolean showTypingSpeechBubble;
 
     private Stage stage;
 
@@ -68,8 +72,10 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public Button connectToggleButton;
     @FXML public Button settingsConnectButton;
     @FXML public Button createRoomButton;
+
     @FXML public RadioButton activeToggle;
     @FXML public RadioButton alwaysOnTopToggle;
+    @FXML public RadioButton showTypingSpeechBubbleToggle;
 
     @FXML public Circle serverStatusCircle;
     @FXML public Label serverConnectStatusLabel;
@@ -91,6 +97,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.active = true;
         this.showHotelsInClient = true;
         this.receiveInformationInClient = true;
+        this.showTypingSpeechBubble = true;
 
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
@@ -100,7 +107,12 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
 
         websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
-        activeToggle.setSelected(this.active);
+
+        initializeRadioButtons();
+    }
+
+    private void initializeRadioButtons() {
+        this.activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.active = newValue;
         });
@@ -110,14 +122,19 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.stage.setAlwaysOnTop(newValue);
         });
 
-
-        receiveInfoInClientRadioButton.setSelected(this.receiveInformationInClient);
-        receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        this.receiveInfoInClientRadioButton.setSelected(this.receiveInformationInClient);
+        this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.receiveInformationInClient = newValue;
         });
-        showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
-        showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+
+        this.showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
+        this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.showHotelsInClient = newValue;
+        });
+
+        this.showTypingSpeechBubbleToggle.setSelected(this.showTypingSpeechBubble);
+        this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.showTypingSpeechBubble = newValue;
         });
 
     }
@@ -176,7 +193,9 @@ public class Chatty extends ExtensionForm implements Initializable {
             Platform.runLater(() -> {
                 this.connectToggleButton.setDisable(true);
                 this.serverConnectStatusLabel.setText("connecting...");
-                this.serverStatusCircle.setFill(new Color(1.0, 0.55, 0.0, 1.0));
+                Color orange = new Color(1.0, 0.55, 0.0, 1.0);
+                this.serverStatusCircle.setFill(orange);
+                this.serverStatusCircle.setEffect(new DropShadow(5, orange));
             });
             ws = new WebsocketClient(new URI(url), this);
             ws.connect();
@@ -395,11 +414,13 @@ public class Chatty extends ExtensionForm implements Initializable {
             settingsConnectButton.setDisable(true);
             this.serverConnectStatusLabel.setText("Server connected");
             this.serverStatusCircle.setFill(connected);
+            this.serverStatusCircle.setEffect(new DropShadow(5, connected));
             this.connectToggleButton.setText("disconnect");
         }else {
             settingsConnectButton.setDisable(false);
             this.serverConnectStatusLabel.setText("Server disconnected");
             this.serverStatusCircle.setFill(disconnected);
+            this.serverStatusCircle.setEffect(new DropShadow(5, disconnected));
             this.connectToggleButton.setText("connect");
         }
 
@@ -477,6 +498,10 @@ public class Chatty extends ExtensionForm implements Initializable {
             showErrorDialog((String) data.get("message"));
             ws.setConnected(false);
         }
+    }
+
+    public boolean showTypingSpeechBubble() {
+        return this.showTypingSpeechBubble;
     }
 
 

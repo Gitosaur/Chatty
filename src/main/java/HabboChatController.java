@@ -50,6 +50,11 @@ public class HabboChatController {
         chatty.intercept(HMessage.Direction.TOCLIENT, "UserUpdate", hMessage -> {
             updateHabboPosition(hMessage);
         });
+
+        chatty.intercept(HMessage.Direction.TOSERVER, "StartTyping", hMessage -> {
+            hMessage.setBlocked(!chatty.showTypingSpeechBubble());
+        });
+
     }
 
 
