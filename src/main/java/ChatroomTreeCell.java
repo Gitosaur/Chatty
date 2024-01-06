@@ -77,7 +77,7 @@ public class ChatroomTreeCell extends TreeCell<Object> {
             roomBox.getChildren().add(spacer);
 
             if(r.getUsers().contains(chatty.getHabboInfo())){
-                Button leaveBtn = new Button("LEAVE");
+                Button leaveBtn = new Button("leave");
                 leaveBtn.getStyleClass().add("leaveBtn");
                 roomBox.getChildren().add(leaveBtn);
                 leaveBtn.setOnMouseClicked(e -> {

@@ -10,6 +10,7 @@ import java.util.Objects;
 public class HabboInfo implements JSONSerializable {
 
     private int id;
+    private int index; // the id you get inside a room
     private String habboName;
     private String figureStr;
     private String sex;
@@ -135,5 +136,13 @@ public class HabboInfo implements JSONSerializable {
 
     public void setHotel(Hotel hotel) {
         this.hotel = hotel;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }

@@ -12,10 +12,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.input.KeyEvent;
@@ -39,7 +37,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 @ExtensionInfo(
         Title =  "Chatty",
@@ -97,7 +98,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.active = true;
         this.showHotelsInClient = true;
         this.receiveInformationInClient = true;
-        this.showTypingSpeechBubble = true;
+        this.showTypingSpeechBubble = false;
 
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
@@ -223,6 +224,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             case "room_users": onRoomUsers(msg.getData()); break;
             case "password": onPassword(msg.getData()); break;
             case "new_room": onNewRoom(msg.getData()); break;
+            case "user_move": onUserMove(msg.getData()); break;
         }
 
         if(type.contains("_error")) {
@@ -709,28 +711,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.opaqueLayer.setVisible(true);
     }
 
-    private void makeWindowMoveable() {
-        final double[] xOffset = new double[1];
-        final double[] yOffset = new double[1];
-        tabPane.setOnMousePressed(event -> {
-            xOffset[0] = event.getSceneX();
-            yOffset[0] = event.getSceneY();
-        });
-
-        tabPane.setOnMouseDragged(event -> {
-            //only makes it draggable at the top bar
-            if(yOffset[0] < 57 && xOffset[0] > 212 && xOffset[0] < 500) {
-                stage.setX(event.getScreenX() - xOffset[0]);
-                stage.setY(event.getScreenY() - yOffset[0]);
-                stage.getScene().setCursor(Cursor.CLOSED_HAND);
-            }
-        });
-
-        tabPane.setOnMouseReleased(event -> {
-            stage.getScene().setCursor(Cursor.DEFAULT);
-        });
-    }
-
 
     protected Optional<ButtonType> showConfirmDialog(String headerText) {
         DialogPane dialogPane = null;
@@ -799,6 +779,25 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     public HabboInfo getHabboInfo() {
         return this.habboInfo;
+    }
+
+    public void sendUserMoved(int x, int y) {
+        ChatMsg msg = new ChatMsg("user_move");
+        ChatMsgData data = new ChatMsgData();
+        data.put("x", x);
+        data.put("y", y);
+        msg.setData(data);
+        if(ws != null)
+            ws.send(msg);
+    }
+
+    public void onUserMove(ChatMsgData data) {
+        String username = (String) data.get("name");
+        Hotel hotel = Hotel.valueOf((String) data.get("hotel"));
+        String room = (String) data.get("room");
+        int x = (int) data.get("x");
+        int y = (int) data.get("y");
+        habboChatController.moveDummy(username, hotel, room, x, y);
     }
 }
 

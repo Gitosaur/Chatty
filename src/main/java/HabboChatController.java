@@ -1,4 +1,5 @@
 import entities.Hotel;
+import gearth.extensions.parsers.HEntity;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 public class HabboChatController {
 
+    private static final double DUMMYS_HEIGHT_OFFSET = 600;
     protected Chatty chatty;
 
     private Dummy infoDummy;
@@ -43,6 +45,7 @@ public class HabboChatController {
         });
 
         chatty.intercept(HMessage.Direction.TOCLIENT, "Users", hMessage -> {
+            findAndSetUserIndex(hMessage);
             spawnDummyInClient(this.infoDummy);
             respawnUserDummys();
         });
@@ -57,10 +60,27 @@ public class HabboChatController {
 
     }
 
+    private void findAndSetUserIndex(HMessage hMessage) {
+        HEntity[] users = HEntity.parse(hMessage.getPacket());
+        if(users.length == 0)
+            return;
+
+        for(HEntity user: users) {
+            int idx = user.getIndex();
+            String name = user.getName();
+            if(name.equals(chatty.getHabboInfo().getHabboName())){
+                chatty.getHabboInfo().setIndex(idx);
+                break;
+            }
+        }
+    }
+
 
     private void respawnUserDummys() {
-        for(Dummy d: dummys)
+        for(Dummy d: dummys){
             spawnDummyInClient(d);
+            sendMovePacket(d.id, d.x, d.y, DUMMYS_HEIGHT_OFFSET);
+        }
     }
 
     private String fixEncoding(String text) {
@@ -125,22 +145,47 @@ public class HabboChatController {
 
 
     private void updateHabboPosition(HMessage hMessage) {
-        //TODO track the user positions to send the messages (speech bubbles) at the correct positions
-//        HPacket packet = hMessage.getPacket();
-//        System.out.println(packet.toExpression());
+        //track the user positions to send the messages (speech bubbles) at the correct positions
+        HPacket packet = hMessage.getPacket();
 
+        packet.readInteger();
+        int index = packet.readInteger();
+        if(index == chatty.getHabboInfo().getIndex()) {
+            int x = packet.readInteger();
+            int y = packet.readInteger();
+            chatty.sendUserMoved(x, y);
+        }
     }
+
+    public void moveDummy(String habbo, Hotel hotel, String room, int x, int y) {
+        Dummy d = findDummy(room, habbo, hotel);
+        if(d != null){
+            d.x = x;
+            d.y = y;
+            sendMovePacket(d.id, x, y, DUMMYS_HEIGHT_OFFSET);
+        }
+    }
+
+    private void sendMovePacket(int dummyId, int x, int y, double z) {
+        String height = Double.toString(z); //must be string
+        HPacket mvPacket = new HPacket("UserUpdate", HMessage.Direction.TOCLIENT, 1, dummyId, x, y, height, 4, 4, "//");
+        chatty.sendToClient(mvPacket);
+    }
+
 
     private static class Dummy {
 
         private int id;
-        private static int id_counter = -1;
+        private static int id_counter = -2;
         private String room;
         private String name;
         private String figure;
         private String sex;
         private String mission;
         private Hotel hotel;
+
+        private int x;
+        private int y;
 
         public Dummy(String name, Hotel hotel, String room, String mission, String figure, String sex) {
             this.id = id_counter;
