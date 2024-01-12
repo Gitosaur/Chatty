@@ -17,12 +17,12 @@ Chatty allows you to send and receive end-to-end messages **using the chat of th
 
 - Joining
   - Double click a chatroom to join it, you might have to enter a password.
-  - You will now receive all messages that are beeing sent from Habbos in this chatroom
+  - You will now receive all messages that are being sent from Habbos in this chatroom
 - Creating
   - To create a chatroom, click the button and enter a chatroom name and a password (optional)
   - Tell your friends the password so that they can join the room
 
-At the bottom left you can activate or deactivate the Chatty client. When activated all your sent messages in Habbo will be redirected to the Chatty server and broadcastet to the chatrooms you are member of. When deactivated, your messages are sent to the Habbo server like usual but you will still receive all the messages that are beeing sent inside the Chatty chatrooms.
+At the bottom left you can activate or deactivate the Chatty client. When activated all your sent messages in Habbo will be redirected to the Chatty server and broadcastet to the chatrooms you are member of. When deactivated, your messages are sent to the Habbo server like usual but you will still receive all the messages that are being sent inside the Chatty chatrooms.
   
 ## Core features
 
