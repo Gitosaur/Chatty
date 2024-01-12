@@ -3,6 +3,8 @@
 Private client-side Habbo chat.
 Create private chatrooms and send end-to-end messages via a private server.
 
+<img src="./demo.gif">
+
 Chatty allows you to send and receive end-to-end messages **using the chat of the original Habbo Client**, without sending any packet to the Habbo servers. You can talk to other Chatty users cross-hotel and cross-room, and only your friends who know the password can read your messages.
 
 <img src="./screenshot.png" alt="image" width="50%" height="auto">
