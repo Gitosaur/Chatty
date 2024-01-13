@@ -1,3 +1,6 @@
+import crypto.AES;
+import crypto.CryptoUtils;
+import crypto.DiffieHellman;
 import entities.Chatroom;
 import entities.HabboId;
 import entities.HabboInfo;
@@ -36,6 +39,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -58,6 +62,9 @@ public class Chatty extends ExtensionForm implements Initializable {
     private Hotel hotel;
 
     private LinkedHashMap<String, Chatroom> chatrooms;
+
+    // when joining a room, a new DH key exchange is taking place - the key is stored here
+    private HashMap<String, DiffieHellman> chatroomRequests;
 
     private HabboChatController habboChatController;
 
@@ -94,10 +101,12 @@ public class Chatty extends ExtensionForm implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
         this.chatrooms = new LinkedHashMap<String, Chatroom>();
+        this.chatroomRequests = new HashMap<>();
+
         this.active = true;
         this.showHotelsInClient = true;
         this.receiveInformationInClient = true;
-        this.showTypingSpeechBubble = false;
+        this.showTypingSpeechBubble = true;
 
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
@@ -110,6 +119,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         initializeRadioButtons();
     }
+
 
     private void initializeRadioButtons() {
         this.activeToggle.setSelected(this.active);
@@ -128,7 +138,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.showTypingSpeechBubble = newValue);
 
         this.websocketServerUrlTextField.textProperty().addListener((observable, oldValue, newValue) -> websocketServerUrlOnChange(newValue));
-
     }
 
     @Override
@@ -216,6 +225,9 @@ public class Chatty extends ExtensionForm implements Initializable {
             case "password": onPassword(msg.getData()); break;
             case "new_room": onNewRoom(msg.getData()); break;
             case "user_move": onUserMove(msg.getData()); break;
+
+            case "room_key_request": onKeyRequest(msg.getData()); break;
+            case "room_key": onKeyIncoming(msg.getData()); break;
         }
 
         if(type.contains("_error")) {
@@ -224,8 +236,77 @@ public class Chatty extends ExtensionForm implements Initializable {
                 unblurMainWindow();
             });
         }
-
     }
+
+
+    private void onKeyIncoming(ChatMsgData data) {
+        try {
+            String room = (String) data.get("room");
+            String dhPub = (String) data.get("dh_pub");
+            String encRoomKey = (String) data.get("room_key");
+            String iv = (String) data.get("iv");
+
+            DiffieHellman dh = chatroomRequests.get(room);
+            byte[] sharedDhSecret = dh.generateSharedSecret(dhPub);
+
+            AES aes = new AES(sharedDhSecret);
+            String decryptedRoomKey = aes.decrypt(encRoomKey, iv);
+
+            AES roomAes = new AES(CryptoUtils.b64decode(decryptedRoomKey));
+            this.chatrooms.get(room).setEncryption(roomAes);
+
+            this.chatroomRequests.remove(room);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private void onKeyRequest(ChatMsgData data) {
+        try {
+            String roomname = (String) data.get("room");
+            String otherDhPub = (String) data.get("dh_pub");
+            String clientId = (String) data.get("clientId");
+
+            //check if you have the
+            Chatroom room = chatrooms.get(roomname);
+            if(room == null || room.getEncryption() == null) {
+                // tell server that you dont have the shared key for that room
+                System.out.println("No AES Key for this room");
+                return;
+            }
+
+            DiffieHellman dh = new DiffieHellman();
+            KeyPair keyPair = dh.getKeyPair();
+            if(keyPair != null){
+                String roomKey = CryptoUtils.b64encode(room.getEncryption().getSecretKey().getEncoded());
+
+                byte[] sharedDhSecret = dh.generateSharedSecret(otherDhPub);
+                AES aes = new AES(sharedDhSecret);
+
+                String[] encryption = aes.encrypt(roomKey);
+                String encryptedRoomKey = encryption[0];
+                String iv = encryption[1];
+
+                System.out.println("encryptedRoomKey: " + encryptedRoomKey);
+
+                ChatMsg msg = new ChatMsg("room_key");
+                ChatMsgData msgData = new ChatMsgData();
+                msg.setData(msgData);
+
+                msgData.put("room", roomname);
+                msgData.put("for_client", clientId);
+                msgData.put("dh_pub", CryptoUtils.b64encode(dh.getKeyPair().getPublic().getEncoded()));
+                msgData.put("room_key", encryptedRoomKey);
+                msgData.put("iv", iv);
+                ws.send(msg);
+            }
+
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void onShowRooms(ChatMsgData data) {
         JSONArray rooms = (JSONArray) data.get("rooms");
@@ -278,12 +359,23 @@ public class Chatty extends ExtensionForm implements Initializable {
         String habbo = (String) data.get("habbo");
         Hotel hotel = Hotel.valueOf((String) data.get("hotel"));
         String room = (String) data.get("room");
-        String text = (String) data.get("message");
+        String msg = (String) data.get("message");
         String type = (String) data.get("type");
+        String iv = (String) data.get("iv");
         int style = (int) data.get("style");
         boolean shout = type.equals("Shout");
 
-        this.habboChatController.sendChat(habbo, hotel, room, text, style, shout);
+        Chatroom chatroom = this.chatrooms.get(room);
+        if(chatroom == null || chatroom.getEncryption() == null) {
+            this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
+            System.err.println("No encryption for "+room);
+            return;
+        }
+
+
+        String decrypted = this.chatrooms.get(room).getEncryption().decrypt(msg, iv);
+
+        this.habboChatController.sendChat(habbo, hotel, room, decrypted, style, shout);
     }
 
     private void onUserLeft(ChatMsgData data) {
@@ -292,12 +384,12 @@ public class Chatty extends ExtensionForm implements Initializable {
         Hotel hotel = Hotel.valueOf((String) data.get("hotel"));
         Chatroom chatroom = chatrooms.get(room);
 
-        boolean isSelf = user.equals(this.habboInfo.getHabboName()) && hotel == this.habboInfo.getHotel();
+        boolean isSelf = isSelf(user, hotel);
 
         if(isMemberOfRoom(room))
             habboChatController.sendInformationMsg((isSelf ? "You" : user) + " left "+ room);
 
-        if(chatroom != null){
+        if(chatroom != null) {
             chatroom.removeUser(user, hotel);
             if(chatroom.getUsers().size() == 0) {
                 this.chatrooms.remove(chatroom.getName());
@@ -326,7 +418,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             //TODO create room
         }
         this.habboChatController.addDummy(username, hotel, room, mission, figure, sex);
-        boolean isSelf = username.equals(this.habboInfo.getHabboName()) && hotel == this.habboInfo.getHotel();
+        boolean isSelf = isSelf(username, hotel);
 
         if(isMemberOfRoom(room)){
             chatroom.setExpanded(true);
@@ -360,7 +452,19 @@ public class Chatty extends ExtensionForm implements Initializable {
         if(creatorInfo == null)
             creatorInfo = new HabboInfo(username, figureStr, sex, mission, hotel);
 
-        Chatroom room = new Chatroom(roomName, hasPwd);
+
+        Chatroom room = null;
+        if(isSelf(username, hotel)) {
+            try {
+                room = new Chatroom(roomName, hasPwd, new AES());
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showErrorDialog("ERROR could not initialize encryption"));
+            }
+        }else {
+            room = new Chatroom(roomName, hasPwd);
+        }
+
         room.addUser(creatorInfo);
         this.chatrooms.put(roomName, room);
         this.habboChatController.addDummy(username, hotel, roomName, mission, figureStr, sex);
@@ -444,8 +548,11 @@ public class Chatty extends ExtensionForm implements Initializable {
         ws.send(msg);
     }
 
+    /**
+     * Send a join room request
+     */
     protected void roomClicked(MouseEvent event, String roomName) {
-        if(event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2){
+        if(event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
             Chatroom room = chatrooms.get(roomName);
 
             if(room == null) return;
@@ -468,11 +575,16 @@ public class Chatty extends ExtensionForm implements Initializable {
                 result.ifPresent(pwd -> {
                     if(pwd.isEmpty())
                         return;
-                    values.put("password", pwd);
+                    values.put("password", CryptoUtils.b64encode(CryptoUtils.sha256(pwd)));
                 });
             }
             if(!room.hasPassword() || (room.hasPassword() && values.containsKey("password"))) {
-                ChatMsg msg = new ChatMsg("join_room", new ChatMsgData(values));
+                DiffieHellman dh = new DiffieHellman();
+                this.chatroomRequests.put(roomName, dh);
+                ChatMsg msg = new ChatMsg("join_room");
+                ChatMsgData msgData = new ChatMsgData(values);
+                msg.setData(msgData);
+                msgData.put("dhPub", CryptoUtils.b64encode(dh.getKeyPair().getPublic().getEncoded()));
                 ws.send(msg);
             }
         }
@@ -649,7 +761,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         ChatMsgData data = new ChatMsgData();
         data.put("room", name);
         if(pw != null && !pw.isEmpty())
-            data.put("password", pw);
+            data.put("password", CryptoUtils.b64encode(CryptoUtils.sha256(pw)));
 
         msg.setData(data);
         ws.send(msg);
@@ -658,18 +770,36 @@ public class Chatty extends ExtensionForm implements Initializable {
     public void broadcastMessage(String text, int style, boolean shout) {
 
         //check if user is in any rooms
+        Chatroom room = null; //TODO
         boolean isInAnyRoom = false;
-        for(Chatroom r: this.chatrooms.values())
-            if(r.getUsers().contains(this.habboInfo))
+        for(Chatroom r: this.chatrooms.values()){
+            if(r.getUsers().contains(this.habboInfo)) {
                 isInAnyRoom = true;
+                room = r;
+            }
+        }
 
-        if(!isInAnyRoom && isActive())
+        if(!isInAnyRoom && isActive()){
             habboChatController.sendInformationMsg("You are in no rooms");
+            return;
+        }
 
         if(active) {
             ChatMsg msg = new ChatMsg("message");
             ChatMsgData data = new ChatMsgData();
-            data.put("message", text);
+
+            if(room == null || room.getEncryption() == null){
+                this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
+                return;
+            }
+
+
+            String[] encryption = room.getEncryption().encrypt(text);
+            String encryptedMsg = encryption[0];
+            String iv = encryption[1];
+
+            data.put("message", encryptedMsg);
+            data.put("iv", iv);
             data.put("style", style);
             data.put("type", shout ? "Shout" : "Chat");
             msg.setData(data);
@@ -789,6 +919,13 @@ public class Chatty extends ExtensionForm implements Initializable {
         int y = (int) data.get("y");
         habboChatController.moveDummy(username, hotel, room, x, y);
     }
+
+
+    private boolean isSelf(String name, Hotel hotel) {
+        return name.equals(this.habboInfo.getHabboName()) && hotel == this.habboInfo.getHotel();
+    }
+
 }
+
 
 

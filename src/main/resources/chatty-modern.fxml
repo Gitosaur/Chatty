@@ -171,7 +171,7 @@
                   </HBox>
                </children>
             </VBox>
-            <Region fx:id="opaqueLayer" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: rgba(0,0,0,0.5);" visible="false" />
+            <Region fx:id="opaqueLayer" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" visible="false" />
          </children>
       </StackPane>
    </center>

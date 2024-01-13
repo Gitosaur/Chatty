@@ -28,8 +28,12 @@ public class WebsocketClient extends org.java_websocket.client.WebSocketClient{
 
     @Override
     public void onMessage(String s) {
-        ChatMsg msg = ChatMsg.parse(s);
-        this.gchatty.onWebsocketMessage(msg);
+        try {
+            ChatMsg msg = ChatMsg.parse(s);
+            this.gchatty.onWebsocketMessage(msg);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -41,6 +45,7 @@ public class WebsocketClient extends org.java_websocket.client.WebSocketClient{
 
     @Override
     public void onError(Exception e) {
+        e.printStackTrace();
         this.gchatty.onWebsocketError();
     }
 

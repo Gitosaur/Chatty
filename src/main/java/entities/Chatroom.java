@@ -1,6 +1,8 @@
 package entities;
 
 
+import crypto.AES;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +15,8 @@ public class Chatroom {
     private boolean hasPassword;
     private Map<HabboId, HabboInfo> users;
 
+    private AES encryption;
+
     //for ui
     private boolean expanded;
 
@@ -22,10 +26,15 @@ public class Chatroom {
         expanded = false;
     }
 
-    public Chatroom(String name, boolean hasPassword) {
+    public Chatroom(String name, boolean hasPassword, AES encryption) {
         this();
         this.name = name;
         this.hasPassword = hasPassword;
+        this.encryption = encryption;
+    }
+
+    public Chatroom(String name, boolean hasPassword) {
+        this(name, hasPassword, null);
     }
 
     public Chatroom(String name, Map<HabboId, HabboInfo> users, boolean hasPassword) {
@@ -97,5 +106,13 @@ public class Chatroom {
 
     public void setExpanded(boolean expanded) {
         this.expanded = expanded;
+    }
+
+    public AES getEncryption() {
+        return encryption;
+    }
+
+    public void setEncryption(AES encryption) {
+        this.encryption = encryption;
     }
 }
