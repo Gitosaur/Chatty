@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 @ExtensionInfo(
         Title =  "Chatty",
         Description =  "Private messenger - cross-room, cross-hotel",
-        Version =  "1.0",
+        Version =  "2.0",
         Author =  "Gitosaur"
 )
 public class Chatty extends ExtensionForm implements Initializable {
@@ -123,7 +123,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         initializeRadioButtons();
     }
 
-
     private void initializeRadioButtons() {
         this.activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.active = newValue);
@@ -146,36 +145,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     @Override
     protected void initExtension() {
         onConnect(this::onGearthConnect);
-    }
 
-    @Override
-    protected void onEndConnection() {
-        super.onEndConnection();
-        this.gEarthConnected = false;
-        System.out.println("GEARTH ON END CONNECTION");
-        this.active = false;
-        if(ws != null) {
-            this.ws.close();
-        }
-        this.updateUi();
-    }
-
-
-
-    private void onGearthConnect(String host, int port, String hotelversion, String clientIdentifier, HClient clientType) {
-        gEarthConnected = true;
-        switch (host) {
-            case "game-us.habbo.com": this.hotel = Hotel.US; break;
-            case "game-nl.habbo.com": this.hotel = Hotel.NL; break;
-            case "game-br.habbo.com": this.hotel = Hotel.BR; break;
-            case "game-tr.habbo.com": this.hotel = Hotel.TR; break;
-            case "game-de.habbo.com": this.hotel = Hotel.DE; break;
-            case "game-fr.habbo.com": this.hotel = Hotel.FR; break;
-            case "game-fi.habbo.com": this.hotel = Hotel.FI; break;
-            case "game-es.habbo.com": this.hotel = Hotel.ES; break;
-            case "game-it.habbo.com": this.hotel = Hotel.IT; break;
-            case "game-s2.habbo.com": this.hotel = Hotel.S2; break;
-        }
+        this.habboChatController = new HabboChatController(this);
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
@@ -193,20 +164,37 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
     @Override
+    protected void onEndConnection() {
+        super.onEndConnection();
+        this.gEarthConnected = false;
+        this.chatrooms.clear();
+        this.chatroomRequests.clear();
+        this.habboChatController.clearAllDummys();
+        System.out.println("GEARTH ON END CONNECTION");
+        if(ws != null) this.ws.close();
+        this.updateUi();
+    }
+
+    private void onGearthConnect(String host, int port, String hotelversion, String clientIdentifier, HClient clientType) {
+        gEarthConnected = true;
+        switch (host) {
+            case "game-us.habbo.com": this.hotel = Hotel.US; break;
+            case "game-nl.habbo.com": this.hotel = Hotel.NL; break;
+            case "game-br.habbo.com": this.hotel = Hotel.BR; break;
+            case "game-tr.habbo.com": this.hotel = Hotel.TR; break;
+            case "game-de.habbo.com": this.hotel = Hotel.DE; break;
+            case "game-fr.habbo.com": this.hotel = Hotel.FR; break;
+            case "game-fi.habbo.com": this.hotel = Hotel.FI; break;
+            case "game-es.habbo.com": this.hotel = Hotel.ES; break;
+            case "game-it.habbo.com": this.hotel = Hotel.IT; break;
+            case "game-s2.habbo.com": this.hotel = Hotel.S2; break;
+        }
+    }
+
+    @Override
     protected void onStartConnection() {
-        this.habboChatController = new HabboChatController(this);
         updateUi();
     }
-
-    private void updateUi() {
-        Platform.runLater(() -> {
-            this.createRoomButton.setVisible(this.ws != null && this.ws.isConnected());
-            updateChatroomsUi();
-            updateServerStatusUi();
-            updateSettingsUi();
-        });
-    }
-
 
     private void connectToWsServer(String url) {
         try {
@@ -227,21 +215,30 @@ public class Chatty extends ExtensionForm implements Initializable {
         ws.send(new ChatMsg("connect", habboInfo.serialize()));
     }
 
+    private void updateUi() {
+        Platform.runLater(() -> {
+            this.createRoomButton.setVisible(this.ws != null && this.ws.isConnected());
+            updateChatroomsUi();
+            updateServerStatusUi();
+            updateSettingsUi();
+        });
+    }
+
+
     protected void onWebsocketMessage(ChatMsg msg) {
         System.out.println("INCOMING: " + msg);
         String type = msg.getType();
 
         switch(type) {
             case "connect": onWebsocketConnect(msg.getData()); break;
-            case "room_info": onRoomInfo(msg.getData()); break;
             case "user_joined": onUserJoined(msg.getData()); break;
             case "user_left": onUserLeft(msg.getData()); break;
             case "message": onMessage(msg.getData()); break;
             case "show_rooms": onShowRooms(msg.getData()); break;
-            case "room_users": onRoomUsers(msg.getData()); break;
-            case "password": onPassword(msg.getData()); break;
             case "new_room": onNewRoom(msg.getData()); break;
             case "user_move": onUserMove(msg.getData()); break;
+            //case "room_info": onRoomInfo(msg.getData()); break; // not needed for gui version
+            //case "room_users": onRoomUsers(msg.getData()); break; // not needed for gui version
 
             case "room_key_request": onKeyRequest(msg.getData()); break;
             case "room_key": onKeyIncoming(msg.getData()); break;
@@ -255,7 +252,11 @@ public class Chatty extends ExtensionForm implements Initializable {
         }
     }
 
-
+    /**
+     * Is called when the server sends you the shared AES key for a chatroom
+     * with the public dh-key of the host. First it creates the shared DH-key to decrypt
+     * the chatroom AES key
+     */
     private void onKeyIncoming(ChatMsgData data) {
         try {
             String room = (String) data.get("room");
@@ -279,6 +280,10 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
 
+    /**
+     * Is called when the server requests you (the host) to encrypt the shared room AES key
+     * With the DiffieHellman public key inside the request MsgData
+     */
     private void onKeyRequest(ChatMsgData data) {
         try {
             String roomname = (String) data.get("room");
@@ -324,7 +329,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         }
     }
 
-
     private void onShowRooms(ChatMsgData data) {
         JSONArray rooms = (JSONArray) data.get("rooms");
         this.chatrooms.clear();
@@ -361,15 +365,6 @@ public class Chatty extends ExtensionForm implements Initializable {
             }
         }
         updateUi();
-    }
-
-
-    private void onPassword(ChatMsgData data) {
-        System.out.println("not yet implemented");
-    }
-
-    private void onRoomUsers(ChatMsgData data) {
-        System.out.println("not yet implemented");
     }
 
     private void onMessage(ChatMsgData data) {
@@ -444,16 +439,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         updateUi();
     }
 
-    private HabboInfo findUser(String username, Hotel hotel) {
-        for(Chatroom r: chatrooms.values()){
-            for(HabboInfo h: r.getUsers()){
-                if(h.getHabboName().equals(username) && h.getHotel() == hotel)
-                    return h;
-            }
-        }
-        return null;
-    }
-
     private void onNewRoom(ChatMsgData data) {
         String roomName = (String) data.get("name");
         boolean hasPwd = (boolean) data.get("password");
@@ -508,12 +493,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         return false;
     }
 
-    private void onRoomInfo(ChatMsgData data) {
-//        System.out.println("not yet implemented");
-        //not needed for the gui version
-    }
-
-
     private void updateSettingsUi() {
         if(ws == null) return;
         String url = ws.getURI().toString();
@@ -557,7 +536,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomsView.setRoot(rootItem);
     }
 
-
     protected void leaveRoom(String name) {
         ChatMsg msg = new ChatMsg("leave_room");
         ChatMsgData data = new ChatMsgData();
@@ -566,10 +544,21 @@ public class Chatty extends ExtensionForm implements Initializable {
         ws.send(msg);
     }
 
+    private HabboInfo findUser(String username, Hotel hotel) {
+        for(Chatroom r: chatrooms.values()){
+            for(HabboInfo h: r.getUsers()){
+                if(h.getHabboName().equals(username) && h.getHotel() == hotel)
+                    return h;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * Send a join room request
      */
-    protected void roomClicked(MouseEvent event, String roomName) {
+    protected void joinChatroom(MouseEvent event, String roomName) {
         if(event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
             Chatroom room = chatrooms.get(roomName);
 
@@ -611,25 +600,17 @@ public class Chatty extends ExtensionForm implements Initializable {
     private void onWebsocketConnect(ChatMsgData data) {
         String status = (String) data.get("status");
         if(status != null && status.equals("success")){
-            System.out.println("Connected!!");
+            System.out.println("Connected to Websocket server!!");
             this.habboChatController.sendInformationMsg("Connected to server");
             ws.setConnected(true);
             ws.send(new ChatMsg("show_rooms"));
         }else {
-            System.out.println("Connection failed");
+            System.out.println("Connection to Websocket server failed");
             this.habboChatController.sendInformationMsg("Connection to server failed");
             showErrorDialog((String) data.get("message"));
             ws.setConnected(false);
         }
-    }
-
-    public boolean showTypingSpeechBubble() {
-        return this.showTypingSpeechBubble;
-    }
-
-
-    public boolean isActive() {
-        return this.active;
+        updateUi();
     }
 
     public void onWebsocketDisconnect() {
@@ -641,16 +622,21 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.updateUi();
     }
 
-
     //settings connect button triggers this
     public void setUrlAndConnect(ActionEvent actionEvent) {
+        if(!gEarthConnected){
+            showErrorDialog("G-Earth is not connected");
+            unblurMainWindow();
+            return;
+        }
+
+        if(ws == null) return;
+
         String wsUrl = this.websocketServerUrlTextField.getText();
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
-//            this.ws.close();
-//            this.connectToWsServer(wsUrl);
-//            this.updateUi();
             setStatusConnectingUi();
+            System.out.println("sending out info retrieve");
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }
     }
@@ -667,6 +653,12 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     //connect button triggers this
     public void toggleConnect(ActionEvent actionEvent) {
+        if(!gEarthConnected) {
+            showErrorDialog("G-Earth is not connected");
+            unblurMainWindow();
+            return;
+        }
+
         if(ws == null || !ws.isConnected()){
             // this triggers a websocket connect on User
             setStatusConnectingUi();
@@ -682,9 +674,9 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.updateUi();
     }
 
-
     public void setDefaultServerURL(ActionEvent actionEvent) {
         this.websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
+        if(ws == null) return;
         this.settingsConnectButton.setDisable(isNewAndOrNotConnected(DEFAULT_WS_SERVER_URL));
     }
 
@@ -695,16 +687,14 @@ public class Chatty extends ExtensionForm implements Initializable {
         });
     }
 
-
     public void websocketServerUrlOnChange(String text) {
+        if(ws == null) return;
         this.settingsConnectButton.setDisable(text.isEmpty() || isNewAndOrNotConnected(text));
     }
 
     private boolean isNewAndOrNotConnected(String newUrl){
-        return (!ws.getURI().toString().equals(newUrl) || ws.isConnected()) &&
-                ws.getURI().toString().equals(newUrl);
+        return (!ws.getURI().toString().equals(newUrl) || ws.isConnected()) && ws.getURI().toString().equals(newUrl);
     }
-
 
     private Optional<String> showPasswordDialog(String headerText) {
         DialogPane dialogPane = null;
@@ -808,16 +798,14 @@ public class Chatty extends ExtensionForm implements Initializable {
     public void broadcastMessage(String text, int style, boolean shout) {
 
         //check if user is in any rooms
-        Chatroom room = null; //TODO
-        boolean isInAnyRoom = false;
+        Chatroom room = null;
         for(Chatroom r: this.chatrooms.values()){
             if(r.getUsers().contains(this.habboInfo)) {
-                isInAnyRoom = true;
                 room = r;
             }
         }
 
-        if(!isInAnyRoom && isActive()){
+        if(room == null && active) {
             habboChatController.sendInformationMsg("You are in no rooms");
             return;
         }
@@ -826,7 +814,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             ChatMsg msg = new ChatMsg("message");
             ChatMsgData data = new ChatMsgData();
 
-            if(room == null || room.getEncryption() == null){
+            if(room.getEncryption() == null){
                 this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
                 return;
             }
@@ -844,6 +832,26 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.ws.send(msg);
         }
     }
+
+    public void sendUserMoved(int x, int y) {
+        ChatMsg msg = new ChatMsg("user_move");
+        ChatMsgData data = new ChatMsgData();
+        data.put("x", x);
+        data.put("y", y);
+        msg.setData(data);
+        if(ws != null)
+            ws.send(msg);
+    }
+
+    public void onUserMove(ChatMsgData data) {
+        String username = (String) data.get("name");
+        Hotel hotel = Hotel.valueOf((String) data.get("hotel"));
+        String room = (String) data.get("room");
+        int x = (int) data.get("x");
+        int y = (int) data.get("y");
+        habboChatController.moveDummy(username, hotel, room, x, y);
+    }
+
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -869,7 +877,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.opaqueLayer.setVisible(true);
     }
 
-
     protected Optional<ButtonType> showConfirmDialog(String headerText) {
         DialogPane dialogPane = null;
         try {
@@ -892,7 +899,6 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         return dialog.showAndWait();
     }
-
 
     private Optional<ButtonType> showErrorDialog(String headerText) {
 
@@ -926,7 +932,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         return this.showHotelsInClient;
     }
 
-
     protected static String shortenString(String n, int maxLen) {
         String s = n;
         if(n.length() > maxLen) {
@@ -939,30 +944,21 @@ public class Chatty extends ExtensionForm implements Initializable {
         return this.habboInfo;
     }
 
-    public void sendUserMoved(int x, int y) {
-        ChatMsg msg = new ChatMsg("user_move");
-        ChatMsgData data = new ChatMsgData();
-        data.put("x", x);
-        data.put("y", y);
-        msg.setData(data);
-        if(ws != null)
-            ws.send(msg);
+    public boolean showTypingSpeechBubble() {
+        return this.showTypingSpeechBubble;
     }
 
-    public void onUserMove(ChatMsgData data) {
-        String username = (String) data.get("name");
-        Hotel hotel = Hotel.valueOf((String) data.get("hotel"));
-        String room = (String) data.get("room");
-        int x = (int) data.get("x");
-        int y = (int) data.get("y");
-        habboChatController.moveDummy(username, hotel, room, x, y);
+    public boolean isActive() {
+        return this.active;
     }
-
 
     private boolean isSelf(String name, Hotel hotel) {
         return name.equals(this.habboInfo.getHabboName()) && hotel == this.habboInfo.getHotel();
     }
 
+    public boolean isGearthConnected() {
+        return this.gEarthConnected;
+    }
 }
 
 

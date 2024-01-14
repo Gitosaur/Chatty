@@ -132,8 +132,10 @@ public class HabboChatController {
     }
 
     public void clearAllDummys() {
-        for (Dummy d : dummys) {
-            chatty.sendToClient(new HPacket("UserRemove", HMessage.Direction.TOCLIENT, Integer.toString(d.id)));
+        if(chatty.isGearthConnected()){
+            for (Dummy d : dummys) {
+                chatty.sendToClient(new HPacket("UserRemove", HMessage.Direction.TOCLIENT, Integer.toString(d.id)));
+            }
         }
         dummys.clear();
     }

@@ -1,9 +1,7 @@
 import de.jensd.fx.glyphs.GlyphsDude;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import entities.Chatroom;
 import entities.HabboInfo;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -12,7 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 
 
@@ -90,7 +87,7 @@ public class ChatroomTreeCell extends TreeCell<Object> {
                     });
                 });
             }
-            roomBox.setOnMouseClicked(event -> chatty.roomClicked(event, r.getName()));
+            roomBox.setOnMouseClicked(event -> chatty.joinChatroom(event, r.getName()));
 
             setGraphic(roomBox);
         }else if(o instanceof HabboInfo) {
