@@ -158,24 +158,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             case "game-it.habbo.com": this.hotel = Hotel.IT; break;
             case "game-s2.habbo.com": this.hotel = Hotel.S2; break;
         }
-    }
 
-    @Override
-    protected void onStartConnection() {
-        this.habboChatController = new HabboChatController(this);
-        this.fetchHabboInfos();
-    }
-
-    private void updateUi() {
-        Platform.runLater(() -> {
-            this.createRoomButton.setVisible(this.ws.isConnected());
-            updateChatroomsUi();
-            updateServerStatusUi();
-            updateSettingsUi();
-        });
-    }
-
-    private void fetchHabboInfos() {
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
             int id = packet.readInteger();
@@ -186,8 +169,25 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.habboInfo = new HabboInfo(id, name, figure, sex, mission, hotel);
             this.connectToWsServer(DEFAULT_WS_SERVER_URL);
         });
+
         sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
     }
+
+    @Override
+    protected void onStartConnection() {
+        this.habboChatController = new HabboChatController(this);
+        updateUi();
+    }
+
+    private void updateUi() {
+        Platform.runLater(() -> {
+            this.createRoomButton.setVisible(this.ws != null && this.ws.isConnected());
+            updateChatroomsUi();
+            updateServerStatusUi();
+            updateSettingsUi();
+        });
+    }
+
 
     private void connectToWsServer(String url) {
         try {
@@ -268,7 +268,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             String otherDhPub = (String) data.get("dh_pub");
             String clientId = (String) data.get("clientId");
 
-            //check if you have the
+            //check if you have the roomkey
             Chatroom room = chatrooms.get(roomname);
             if(room == null || room.getEncryption() == null) {
                 // tell server that you dont have the shared key for that room
@@ -498,6 +498,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
 
     private void updateSettingsUi() {
+        if(ws == null) return;
         String url = ws.getURI().toString();
         this.websocketServerUrlTextField.setText(url);
     }
@@ -507,18 +508,18 @@ public class Chatty extends ExtensionForm implements Initializable {
         Color disconnected = new Color(0.82, 0.082, 0.082, 1.0);
         this.connectToggleButton.setDisable(false);
 
-        if(ws.isConnected()){
-            settingsConnectButton.setDisable(true);
-            this.serverConnectStatusLabel.setText("Server connected");
-            this.serverStatusCircle.setFill(connected);
-            this.serverStatusCircle.setEffect(new DropShadow(5, connected));
-            this.connectToggleButton.setText("disconnect");
-        }else {
+        if(ws == null || !ws.isConnected()){
             settingsConnectButton.setDisable(false);
             this.serverConnectStatusLabel.setText("Server disconnected");
             this.serverStatusCircle.setFill(disconnected);
             this.serverStatusCircle.setEffect(new DropShadow(5, disconnected));
             this.connectToggleButton.setText("connect");
+        }else if(ws.isConnected()){
+            settingsConnectButton.setDisable(true);
+            this.serverConnectStatusLabel.setText("Server connected");
+            this.serverStatusCircle.setFill(connected);
+            this.serverStatusCircle.setEffect(new DropShadow(5, connected));
+            this.connectToggleButton.setText("disconnect");
         }
 
     }
@@ -626,8 +627,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
             this.ws.close();
-            this.updateUi();
             this.connectToWsServer(wsUrl);
+            this.updateUi();
         }
     }
 
@@ -645,7 +646,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     public void toggleConnect(ActionEvent actionEvent) {
         String wsUrl = this.websocketServerUrlTextField.getText();
-        if(!ws.isConnected()){
+        if(ws == null || !ws.isConnected()){
             this.connectToWsServer(wsUrl);
         }else {
             Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
