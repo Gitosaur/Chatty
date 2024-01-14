@@ -17,9 +17,10 @@ public class CryptoUtils {
     }
 
     public static byte[] sha256(String s) {
+
         final MessageDigest digest;
         try {
-            digest = MessageDigest.getInstance("SHA3-256");
+            digest = MessageDigest.getInstance("SHA-256");
             return digest.digest(s.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
