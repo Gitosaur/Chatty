@@ -96,6 +96,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public RadioButton receiveInfoInClientRadioButton;
     @FXML public RadioButton showHotelsInClientRadioButton;
 
+    private boolean gEarthConnected;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -103,6 +105,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatrooms = new LinkedHashMap<String, Chatroom>();
         this.chatroomRequests = new HashMap<>();
 
+        this.gEarthConnected = false;
         this.active = true;
         this.showHotelsInClient = true;
         this.receiveInformationInClient = true;
@@ -145,7 +148,22 @@ public class Chatty extends ExtensionForm implements Initializable {
         onConnect(this::onGearthConnect);
     }
 
+    @Override
+    protected void onEndConnection() {
+        super.onEndConnection();
+        this.gEarthConnected = false;
+        System.out.println("GEARTH ON END CONNECTION");
+        this.active = false;
+        if(ws != null) {
+            this.ws.close();
+        }
+        this.updateUi();
+    }
+
+
+
     private void onGearthConnect(String host, int port, String hotelversion, String clientIdentifier, HClient clientType) {
+        gEarthConnected = true;
         switch (host) {
             case "game-us.habbo.com": this.hotel = Hotel.US; break;
             case "game-nl.habbo.com": this.hotel = Hotel.NL; break;
@@ -167,10 +185,11 @@ public class Chatty extends ExtensionForm implements Initializable {
             String sex = packet.readString();
             String mission = packet.readString();
             this.habboInfo = new HabboInfo(id, name, figure, sex, mission, hotel);
-            this.connectToWsServer(DEFAULT_WS_SERVER_URL);
-        });
 
-        sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            //grab the url
+            String wsUrl = this.websocketServerUrlTextField.getText();
+            this.connectToWsServer(wsUrl);
+        });
     }
 
     @Override
@@ -191,19 +210,17 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     private void connectToWsServer(String url) {
         try {
-            Platform.runLater(() -> {
-                this.connectToggleButton.setDisable(true);
-                this.serverConnectStatusLabel.setText("connecting...");
-                Color orange = new Color(1.0, 0.55, 0.0, 1.0);
-                this.serverStatusCircle.setFill(orange);
-                this.serverStatusCircle.setEffect(new DropShadow(5, orange));
-            });
+            setStatusConnectingUi();
+            if(ws != null && ws.isConnected())
+                ws.close();
+
             ws = new WebsocketClient(new URI(url), this);
             ws.connect();
         } catch (URISyntaxException e) {
             showErrorDialog("Invalid URL syntax");
             unblurMainWindow();
         }
+        updateUi();
     }
 
     protected void onWebsocketOpen() {
@@ -616,21 +633,55 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
     public void onWebsocketDisconnect() {
-        this.habboChatController.sendInformationMsg("Disconnected from server");
         this.chatrooms.clear();
-        this.habboChatController.clearAllDummys();
+        if(gEarthConnected){
+            this.habboChatController.sendInformationMsg("Disconnected from server");
+            this.habboChatController.clearAllDummys();
+        }
         this.updateUi();
     }
 
+
+    //settings connect button triggers this
     public void setUrlAndConnect(ActionEvent actionEvent) {
         String wsUrl = this.websocketServerUrlTextField.getText();
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
-            this.ws.close();
-            this.connectToWsServer(wsUrl);
-            this.updateUi();
+//            this.ws.close();
+//            this.connectToWsServer(wsUrl);
+//            this.updateUi();
+            setStatusConnectingUi();
+            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }
     }
+
+    private void setStatusConnectingUi() {
+        Platform.runLater(() -> {
+            this.connectToggleButton.setDisable(true);
+            this.serverConnectStatusLabel.setText("connecting...");
+            Color orange = new Color(1.0, 0.55, 0.0, 1.0);
+            this.serverStatusCircle.setFill(orange);
+            this.serverStatusCircle.setEffect(new DropShadow(5, orange));
+        });
+    }
+
+    //connect button triggers this
+    public void toggleConnect(ActionEvent actionEvent) {
+        if(ws == null || !ws.isConnected()){
+            // this triggers a websocket connect on User
+            setStatusConnectingUi();
+            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+        }else {
+            Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
+            unblurMainWindow();
+            result.ifPresent(res -> {
+                if(res.getButtonData().isDefaultButton())
+                    this.ws.close();
+            });
+        }
+        this.updateUi();
+    }
+
 
     public void setDefaultServerURL(ActionEvent actionEvent) {
         this.websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
@@ -644,20 +695,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         });
     }
 
-    public void toggleConnect(ActionEvent actionEvent) {
-        String wsUrl = this.websocketServerUrlTextField.getText();
-        if(ws == null || !ws.isConnected()){
-            this.connectToWsServer(wsUrl);
-        }else {
-            Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
-            unblurMainWindow();
-            result.ifPresent(res -> {
-                if(res.getButtonData().isDefaultButton()) this.ws.close();
-            });
-
-        }
-        this.updateUi();
-    }
 
     public void websocketServerUrlOnChange(String text) {
         this.settingsConnectButton.setDisable(text.isEmpty() || isNewAndOrNotConnected(text));
