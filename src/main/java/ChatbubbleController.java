@@ -1,29 +1,19 @@
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.util.Callback;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChatbubbleController {
 
     private HabboChatController habboChatController;
-
     private ComboBox<Image> comboBox;
-
     private HashMap<Integer, Integer> choices;
+
+    private int[] chatbubbleIds = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 35, 36, 37, 38, 120, 121, 130, 131, 132, 133, 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1010, 1011, 1012, 1013, 1014};
+
 
     public ChatbubbleController(HabboChatController habboChatController, ComboBox<Image> comboBox) {
         this.habboChatController = habboChatController;
@@ -45,27 +35,18 @@ public class ChatbubbleController {
         });
 
 
-
         loadImages();
     }
 
 
     private void loadImages() {
         try {
-            URL path = getClass().getResource("/chatbubbles");
-            File f = new File(path.toURI());
-            List<File> files = Files.list(f.toPath())
-                .map(Path::toFile)
-                .sorted(Comparator.comparing(ChatbubbleController::extractNumberFromFileName))
-                .filter(File::isFile)
-                .collect(Collectors.toList());
 
-            for (int i = 0; i < files.size(); i++) {
-                File imgFile = files.get(i);
-                choices.put(i, extractNumberFromFileName(imgFile));
-
-                Image image = new Image(imgFile.getAbsolutePath());
-                comboBox.getItems().add(image);
+            for (int idx = 0; idx < chatbubbleIds.length; idx++) {
+                int cbId = chatbubbleIds[idx];
+                Image img = new Image("/chatbubbles/" + cbId + ".png");
+                choices.put(idx, cbId);
+                comboBox.getItems().add(img);
             }
 
         } catch (Exception e) {
@@ -73,13 +54,8 @@ public class ChatbubbleController {
         }
     }
 
-   private static int extractNumberFromFileName(File file) {
-        String numberString = file.getName().split("\\.")[0];
-        return Integer.parseInt(numberString);
-   }
 
-
-   private static class ImageCell extends ListCell<Image> {
+   private class ImageCell extends ListCell<Image> {
        @Override
        protected void updateItem(Image item, boolean empty) {
            super.updateItem(item, empty);
