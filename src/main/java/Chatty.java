@@ -19,6 +19,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.GaussianBlur;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
@@ -67,7 +68,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     private HashMap<String, DiffieHellman> chatroomRequests;
 
     private HabboChatController habboChatController;
-    private ChatbubbleController chatbubbleController;
+    private ChatlogController chatlogController;
+
 
     private boolean active; //secret chat active
     private boolean showHotelsInClient;
@@ -97,7 +99,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public RadioButton receiveInfoInClientRadioButton;
     @FXML public RadioButton showHotelsInClientRadioButton;
 
-    @FXML public ComboBox chatbubbleComboBox;
+    @FXML public ComboBox<Image> chatbubbleComboBox;
+    @FXML public ListView chatlogListView;
 
 
     private boolean gEarthConnected;
@@ -157,7 +160,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         onConnect(this::onGearthConnect);
 
         this.habboChatController = new HabboChatController(this);
-        this.chatbubbleController = new ChatbubbleController(habboChatController, chatbubbleComboBox);
+        new ChatbubbleController(habboChatController, this.chatbubbleComboBox);
+        this.chatlogController = new ChatlogController(this, this.chatlogListView);
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
@@ -395,9 +399,9 @@ public class Chatty extends ExtensionForm implements Initializable {
             return;
         }
 
-
         String decrypted = this.chatrooms.get(room).getEncryption().decrypt(msg, iv);
 
+        this.chatlogController.addChat(findUser(habbo, hotel), decrypted, room);
         this.habboChatController.sendChat(habbo, hotel, room, decrypted, style, shout);
     }
 

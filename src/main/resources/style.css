@@ -76,6 +76,38 @@
 }
 
 
+
+
+/************************/
+/*       LIST VIEW      */
+/************************/
+
+.list-cell {
+    -fx-background-color: -fx-base3;
+    -fx-text-fill: -fx-fontColor;
+    -fx-font-size: 13pt;
+    -fx-padding: 3 10;
+}
+
+.list-cell:hover{
+    /*-fx-background-color: rgba(26, 31, 46, 0.7);*/
+    -fx-background-color: -fx-base1;
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: -fx-base2;
+}
+
+.list-view {
+    -fx-background-color: -fx-base2;
+    -fx-padding: 0 10;
+}
+
+
+
+
+
+
 /************************/
 /*       TAB PANE       */
 /************************/

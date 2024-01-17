@@ -94,26 +94,8 @@ public class ChatroomTreeCell extends TreeCell<Object> {
             HabboInfo user = (HabboInfo) o;
             HBox userBox = new HBox();
             userBox.setAlignment(Pos.CENTER_LEFT);
-            ImageView userImgView = new ImageView();
-            userImgView.setPreserveRatio(true);
-            userImgView.setFitWidth(35);
 
-            if(user.getHeadImg() == null) {
-                userImgView.setImage(new Image("/avatar-head-placeholder.png"));
-                if(!user.imageLoading()){
-                    Image headImg = new Image(getFigureStringUrl(user.getFigureStr()), true);
-                    headImg.progressProperty().addListener((observable, oldValue, progress) -> {
-                        user.setImageLoading(true);
-                        if ((Double) progress == 1.0 && !headImg.isError()) {
-                            user.setHeadImg(headImg);
-                            user.setImageLoading(false);
-                            userImgView.setImage(headImg);
-                        }
-                    });
-                }
-            }else {
-                userImgView.setImage(user.getHeadImg());
-            }
+            ImageView userImgView = user.getHabboHeadImage();
 
             Label userLabel = new Label(user.getHabboName());
             Label userHotel = new Label(user.getHotel().toString());
@@ -125,8 +107,6 @@ public class ChatroomTreeCell extends TreeCell<Object> {
         }
     }
 
-    private String getFigureStringUrl(String figure) {
-        return "https://www.habbo.com/habbo-imaging/avatarimage?size=b&figure="+figure+"&headonly=1";
-    }
+
 
 }

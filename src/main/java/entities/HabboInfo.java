@@ -1,6 +1,7 @@
 package entities;
 
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import message.JSONSerializable;
 
 import java.util.HashMap;
@@ -35,6 +36,35 @@ public class HabboInfo implements JSONSerializable {
 
     public HabboInfo(String habboName, String figureStr, String sex, String mission, Hotel hotel) {
         this(-1, habboName, figureStr, sex, mission, hotel);
+    }
+
+
+    public ImageView getHabboHeadImage() {
+        ImageView userImgView = new ImageView();
+        userImgView.setPreserveRatio(true);
+        userImgView.setFitWidth(35);
+
+        if(this.headImg == null) {
+            userImgView.setImage(new Image("/avatar-head-placeholder.png"));
+            if(!imageLoading){
+                Image img = new Image(getFigureStringUrl(this.figureStr), true);
+                img.progressProperty().addListener((observable, oldValue, progress) -> {
+                    this.imageLoading = true;
+                    if ((Double) progress == 1.0 && !img.isError()) {
+                        this.headImg = img;
+                        this.imageLoading = false;
+                        userImgView.setImage(img);
+                    }
+                });
+            }
+        }else {
+            userImgView.setImage(this.headImg);
+        }
+        return userImgView;
+    }
+
+    private static String getFigureStringUrl(String figure) {
+        return "https://www.habbo.com/habbo-imaging/avatarimage?size=b&figure="+figure+"&headonly=1";
     }
 
     @Override
@@ -74,68 +104,20 @@ public class HabboInfo implements JSONSerializable {
         return Objects.hash(habboName, hotel);
     }
 
-    public Image getHeadImg() {
-        return headImg;
-    }
-
-    public void setHeadImg(Image headImg) {
-        this.headImg = headImg;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getHabboName() {
         return habboName;
-    }
-
-    public void setHabboName(String habboName) {
-        this.habboName = habboName;
     }
 
     public String getFigureStr() {
         return figureStr;
     }
 
-    public void setFigureStr(String figureStr) {
-        this.figureStr = figureStr;
-    }
-
     public String getSex() {
         return sex;
     }
 
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
-
-    public String getMission() {
-        return mission;
-    }
-
-    public void setMission(String mission) {
-        this.mission = mission;
-    }
-
-    public boolean imageLoading() {
-        return this.imageLoading;
-    }
-
-    public void setImageLoading(boolean b) {
-        this.imageLoading = b;
-    }
-
     public Hotel getHotel() {
         return hotel;
-    }
-
-    public void setHotel(Hotel hotel) {
-        this.hotel = hotel;
     }
 
     public int getIndex() {
