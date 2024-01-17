@@ -21,7 +21,7 @@
 
 <BorderPane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
    <center>
-      <StackPane prefWidth="599.0">
+      <StackPane>
          <children>
             <VBox fx:id="contentPane" prefWidth="599.0">
                <children>
@@ -73,7 +73,10 @@
                                              <children>
                                                 <HBox alignment="CENTER_LEFT" spacing="5.0">
                                                    <children>
-                                                      <Label text="Active chatbubble" />
+                                                      <Label text="Active chatbubble">
+                                                         <font>
+                                                            <Font size="13.0" />
+                                                         </font></Label>
                                                       <ComboBox fx:id="chatbubbleComboBox" />
                                                    </children>
                                                 </HBox>
@@ -93,22 +96,18 @@
                                                 </RadioButton>
                                              </children>
                                           </VBox>
-                                          <FlowPane alignment="CENTER_LEFT" layoutX="20.0" layoutY="17.0" prefWrapLength="575.0">
+                                          <FlowPane alignment="CENTER_LEFT" columnHalignment="RIGHT" hgap="5.0" layoutX="20.0" layoutY="17.0" prefHeight="38.0" prefWidth="552.0" prefWrapLength="575.0">
                                              <children>
                                                 <Label minHeight="25.0" minWidth="140.0" prefHeight="25.0" prefWidth="140.0" text="Websocket Server URL">
                                                    <font>
                                                       <Font size="13.0" />
                                                    </font>
                                                 </Label>
+                                                <TextField fx:id="websocketServerUrlTextField" prefWidth="214.0" promptText="ws://example.com:8000" />
                                                 <HBox spacing="5.0">
                                                    <children>
-                                                      <TextField fx:id="websocketServerUrlTextField" prefWidth="214.0" promptText="ws://example.com:8000" />
-                                                      <HBox spacing="5.0">
-                                                         <children>
-                                                            <Button fx:id="settingsConnectButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#setUrlAndConnect" text="Connect" />
-                                                            <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#setDefaultServerURL" text="Set default" />
-                                                         </children>
-                                                      </HBox>
+                                                      <Button fx:id="settingsConnectButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#setUrlAndConnect" text="Connect" />
+                                                      <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#setDefaultServerURL" text="Set default" />
                                                    </children>
                                                 </HBox>
                                              </children>
