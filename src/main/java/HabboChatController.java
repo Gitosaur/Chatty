@@ -11,7 +11,7 @@ import java.util.Objects;
 public class HabboChatController {
 
     private static final double DUMMYS_HEIGHT_OFFSET = 600;
-    protected Chatty chatty;
+    private Chatty chatty;
 
     private Dummy infoDummy;
     private String infoDummyUserName = "[Chatty]";
@@ -21,10 +21,12 @@ public class HabboChatController {
     private int infoDummyChatBubble = 31;
 
     private List<Dummy> dummys;
+    private int chatbubbleId;
 
     public HabboChatController(Chatty chatty) {
         this.chatty = chatty;
         this.dummys = new ArrayList<Dummy>();
+        this.chatbubbleId = -1;
 
         this.infoDummy = new Dummy(infoDummyUserName, null,  null, infoDummyMission, infoDummyFigureStr, infoDummySex);
 
@@ -32,6 +34,9 @@ public class HabboChatController {
             HPacket packet = hMessage.getPacket();
             String text = fixEncoding(packet.readString());
             int style = packet.readInteger();
+            if(this.chatbubbleId != -1)
+                style = this.chatbubbleId;
+
             hMessage.setBlocked(chatty.isActive());
             chatty.broadcastMessage(text, style, false);
         });
@@ -40,6 +45,8 @@ public class HabboChatController {
             HPacket packet = hMessage.getPacket();
             String text = fixEncoding(packet.readString());
             int style = packet.readInteger();
+            if(this.chatbubbleId != -1)
+                style = this.chatbubbleId;
             hMessage.setBlocked(chatty.isActive());
             chatty.broadcastMessage(text, style, true);
         });
@@ -61,6 +68,9 @@ public class HabboChatController {
     }
 
     private void findAndSetUserIndex(HMessage hMessage) {
+        if(chatty.getHabboInfo() == null)
+            return;
+
         HEntity[] users = HEntity.parse(hMessage.getPacket());
         if(users.length == 0)
             return;
@@ -76,7 +86,7 @@ public class HabboChatController {
     }
 
 
-    private void respawnUserDummys() {
+    public void respawnUserDummys() {
         for(Dummy d: dummys){
             spawnDummyInClient(d);
             sendMovePacket(d.id, d.x, d.y, DUMMYS_HEIGHT_OFFSET);
@@ -176,6 +186,9 @@ public class HabboChatController {
         chatty.sendToClient(mvPacket);
     }
 
+    public void setChatbubble(int id) {
+        this.chatbubbleId = id;
+    }
 
     private static class Dummy {
 

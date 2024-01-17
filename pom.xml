@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
-    <artifactId>GChatty</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>org.chatty</groupId>
+    <artifactId>Chatty</artifactId>
+    <version>2.0</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -96,10 +96,10 @@
                 <archive>
                     <manifest>
                         <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        <addClasspath>true</addClasspath>
-                        <classpathPrefix>lib/</classpathPrefix>
+<!--                        <addClasspath>true</addClasspath>-->
+<!--                        <classpathPrefix>lib/</classpathPrefix>-->
                         <mainClass>ChattyLauncher</mainClass>
-                        <useUniqueVersions>false</useUniqueVersions>
+<!--                        <useUniqueVersions>false</useUniqueVersions>-->
                     </manifest>
                 </archive>
             </configuration>

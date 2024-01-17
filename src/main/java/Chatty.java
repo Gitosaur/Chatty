@@ -67,6 +67,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private HashMap<String, DiffieHellman> chatroomRequests;
 
     private HabboChatController habboChatController;
+    private ChatbubbleController chatbubbleController;
 
     private boolean active; //secret chat active
     private boolean showHotelsInClient;
@@ -95,6 +96,9 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     @FXML public RadioButton receiveInfoInClientRadioButton;
     @FXML public RadioButton showHotelsInClientRadioButton;
+
+    @FXML public ComboBox chatbubbleComboBox;
+
 
     private boolean gEarthConnected;
 
@@ -134,12 +138,18 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> this.receiveInformationInClient = newValue);
 
         this.showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
-        this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> this.showHotelsInClient = newValue);
+        this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.showHotelsInClient = newValue;
+            if(habboChatController != null)
+                habboChatController.respawnUserDummys();
+        });
 
         this.showTypingSpeechBubbleToggle.setSelected(this.showTypingSpeechBubble);
         this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.showTypingSpeechBubble = newValue);
 
         this.websocketServerUrlTextField.textProperty().addListener((observable, oldValue, newValue) -> websocketServerUrlOnChange(newValue));
+
+        this.updateServerStatusUi();
     }
 
     @Override
@@ -147,6 +157,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         onConnect(this::onGearthConnect);
 
         this.habboChatController = new HabboChatController(this);
+        this.chatbubbleController = new ChatbubbleController(habboChatController, chatbubbleComboBox);
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
@@ -166,11 +177,11 @@ public class Chatty extends ExtensionForm implements Initializable {
     @Override
     protected void onEndConnection() {
         super.onEndConnection();
+        System.out.println("GEARTH ON END CONNECTION");
         this.gEarthConnected = false;
         this.chatrooms.clear();
         this.chatroomRequests.clear();
         this.habboChatController.clearAllDummys();
-        System.out.println("GEARTH ON END CONNECTION");
         if(ws != null) this.ws.close();
         this.updateUi();
     }
@@ -630,13 +641,16 @@ public class Chatty extends ExtensionForm implements Initializable {
             return;
         }
 
-        if(ws == null) return;
+        if(ws == null) {
+            setStatusConnectingUi();
+            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            return;
+        }
 
         String wsUrl = this.websocketServerUrlTextField.getText();
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
             setStatusConnectingUi();
-            System.out.println("sending out info retrieve");
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }
     }
@@ -660,8 +674,8 @@ public class Chatty extends ExtensionForm implements Initializable {
         }
 
         if(ws == null || !ws.isConnected()){
-            // this triggers a websocket connect on User
             setStatusConnectingUi();
+            // this triggers a websocket connect on User
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }else {
             Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
@@ -797,6 +811,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     public void broadcastMessage(String text, int style, boolean shout) {
 
+        if(!active) return;
         //check if user is in any rooms
         Chatroom room = null;
         for(Chatroom r: this.chatrooms.values()){
@@ -805,32 +820,29 @@ public class Chatty extends ExtensionForm implements Initializable {
             }
         }
 
-        if(room == null && active) {
+        if(room == null) {
             habboChatController.sendInformationMsg("You are in no rooms");
             return;
         }
 
-        if(active) {
-            ChatMsg msg = new ChatMsg("message");
-            ChatMsgData data = new ChatMsgData();
+        ChatMsg msg = new ChatMsg("message");
+        ChatMsgData data = new ChatMsgData();
 
-            if(room.getEncryption() == null){
-                this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
-                return;
-            }
-
-
-            String[] encryption = room.getEncryption().encrypt(text);
-            String encryptedMsg = encryption[0];
-            String iv = encryption[1];
-
-            data.put("message", encryptedMsg);
-            data.put("iv", iv);
-            data.put("style", style);
-            data.put("type", shout ? "Shout" : "Chat");
-            msg.setData(data);
-            this.ws.send(msg);
+        if(room.getEncryption() == null){
+            this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
+            return;
         }
+
+        String[] encryption = room.getEncryption().encrypt(text);
+        String encryptedMsg = encryption[0];
+        String iv = encryption[1];
+
+        data.put("message", encryptedMsg);
+        data.put("iv", iv);
+        data.put("style", style);
+        data.put("type", shout ? "Shout" : "Chat");
+        msg.setData(data);
+        this.ws.send(msg);
     }
 
     public void sendUserMoved(int x, int y) {

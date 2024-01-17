@@ -317,3 +317,54 @@
 
 
 
+/************************/
+/*       COMBO BOX      */
+/************************/
+
+.combo-box-popup .list-view {
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.3));
+    -fx-background-radius: 5;
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-radius: 5;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
+    -fx-background-blur: 30px;
+    -fx-pref-width: 125;
+}
+
+/* Style the selected item */
+.combo-box .list-cell:selected {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.combo-box-base {
+    -fx-pref-width: 125;
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.3));
+    -fx-background-radius: 5;
+    -fx-border-color: rgba(255, 255, 255, 0.5);
+    -fx-border-radius: 5;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
+    -fx-background-blur: 30px;
+}
+
+.combo-box-base:hover {
+    -fx-background-color: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), -fx-secondaryAccentColor);
+}
+
+.combo-box-base:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
