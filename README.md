@@ -1,17 +1,18 @@
 # ![](src/main/resources/logo40px.png) Chatty
 
-Private end-to-end encrypted in-game Habbo chat.
+Zero-setup hidden chat with end-to-end encryption for Habbo.
 Create private chatrooms and send end-to-end encrypted messages via a private server.
+
+Chatty allows you to exchange end-to-end encrypted messages **using the normal Habbo chat**, without sending any packet to the Habbo servers. You can talk to other Chatty users cross-hotel and cross-room, and only your friends who know the password can read your messages.
 
 <img src="./demo.gif">
 
-Chatty allows you to exchange end-to-end encrypted messages **using the chat of the original Habbo Client**, without sending any packet to the Habbo servers. You can talk to other Chatty users cross-hotel and cross-room, and only your friends who know the password can read your messages.
-
 <img src="./screenshot.png" alt="image" width="50%" height="auto">
+
 
 ## How to use Chatty?
 
- When starting the chatty client, by default it will automatically connect to our Chatty server but you can also [host your own server](#Host-your-own-Chatty-server) and connect to it in the settings tab. In the bottom right of the Chatty client you can check if the connection to the Chatty server was successful.
+ After starting Chatty, press connect to connect to the private Server. you can change the server URL in the settings tab. In the bottom right of the Chatty client you can check if the connection to the Chatty server was successful.
 
  Inside the UI you see all available Chatty chatrooms and the Habbos inside it. You can either join a chatroom or create your own.
 
@@ -27,11 +28,9 @@ At the bottom left you can activate or deactivate the Chatty client. When activa
 ## Core features
 
 - Secretly chat within the Habbo client
+- Chatting cross-room and cross-hotel
 - End-to-end encrypted
 - Hashed chatroom passwords
-- Chatting cross-room and cross-hotel
-- Communicate with other Chatty users without Habbo knowing
-
 
 ## How it works
 
