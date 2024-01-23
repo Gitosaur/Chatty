@@ -1,3 +1,9 @@
+package controllers;
+
+import controllers.ChatbubbleController;
+import controllers.ChatlogController;
+import controllers.HabboChatController;
+import controllers.HotKeyController;
 import crypto.AES;
 import crypto.CryptoUtils;
 import crypto.DiffieHellman;
@@ -35,6 +41,8 @@ import message.ChatMsgData;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import ui.ChatroomTreeCell;
+import websocket.WebsocketClient;
 
 import java.io.IOException;
 import java.net.URI;
@@ -47,7 +55,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 @ExtensionInfo(
-        Title =  "Chatty",
+        Title =  "controllers.Chatty",
         Description =  "Private messenger - cross-room, cross-hotel",
         Version =  "2.0",
         Author =  "Gitosaur"
@@ -236,7 +244,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         updateUi();
     }
 
-    protected void onWebsocketOpen() {
+    public void onWebsocketOpen() {
         ws.send(new ChatMsg("connect", habboInfo.serialize()));
     }
 
@@ -250,7 +258,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
 
-    protected void onWebsocketMessage(ChatMsg msg) {
+    public void onWebsocketMessage(ChatMsg msg) {
         System.out.println("INCOMING: " + msg);
         String type = msg.getType();
 
@@ -561,7 +569,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomsView.setRoot(rootItem);
     }
 
-    protected void leaveRoom(String name) {
+    public void leaveRoom(String name) {
         ChatMsg msg = new ChatMsg("leave_room");
         ChatMsgData data = new ChatMsgData();
         data.put("room", name);
@@ -583,7 +591,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     /**
      * Send a join room request
      */
-    protected void joinChatroom(MouseEvent event, String roomName) {
+    public void joinChatroom(MouseEvent event, String roomName) {
         if(event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
             Chatroom room = chatrooms.get(roomName);
 
@@ -891,7 +899,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         stage.hide();
     }
 
-    protected void unblurMainWindow() {
+    public void unblurMainWindow() {
         this.opaqueLayer.setVisible(false);
         contentPane.setEffect(null);
     }
@@ -903,7 +911,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.opaqueLayer.setVisible(true);
     }
 
-    protected Optional<ButtonType> showConfirmDialog(String headerText) {
+    public Optional<ButtonType> showConfirmDialog(String headerText) {
         DialogPane dialogPane = null;
         try {
             dialogPane = FXMLLoader.load(getClass().getResource("/dialogs/confirm-dialog.fxml"));
@@ -958,7 +966,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         return this.showHotelsInClient;
     }
 
-    protected static String shortenString(String n, int maxLen) {
+    public static String shortenString(String n, int maxLen) {
         String s = n;
         if(n.length() > maxLen) {
             s = n.substring(0, maxLen) + "...";

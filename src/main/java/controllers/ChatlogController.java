@@ -1,3 +1,5 @@
+package controllers;
+
 import entities.HabboInfo;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

@@ -23,7 +23,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Chatty">
+<BorderPane id="mainPane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Chatty">
    <center>
       <StackPane>
          <children>
@@ -139,7 +139,7 @@
                                           </VBox>
                                           <FlowPane alignment="CENTER_LEFT" columnHalignment="RIGHT" hgap="5.0" layoutX="20.0" layoutY="17.0" prefWrapLength="700.0">
                                              <children>
-                                                <Label minHeight="25.0" minWidth="140.0" prefHeight="25.0" prefWidth="140.0" text="Chatty Server URL">
+                                                <Label minHeight="25.0" minWidth="140.0" prefHeight="25.0" prefWidth="140.0" text="controllers.Chatty Server URL">
                                                    <font>
                                                       <Font size="13.0" />
                                                    </font>

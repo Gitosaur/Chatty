@@ -1,3 +1,5 @@
+package controllers;
+
 import entities.HabboInfo;
 import entities.Hotel;
 import gearth.extensions.parsers.HEntity;
@@ -15,7 +17,7 @@ public class HabboChatController {
     private Chatty chatty;
 
     private Dummy infoDummy;
-    private String infoDummyUserName = "[Chatty]";
+    private String infoDummyUserName = "[controllers.Chatty]";
     private String infoDummyMission = "";
     private String infoDummyFigureStr = "hd-4287-29.ch-4025-1428-95.lg-4017-1428-95.sh-4016-1243-110";
     private String infoDummySex = "M";

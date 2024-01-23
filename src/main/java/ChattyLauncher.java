@@ -1,3 +1,4 @@
+import controllers.Chatty;
 import gearth.extensions.ExtensionForm;
 import gearth.extensions.ExtensionFormCreator;
 import javafx.fxml.FXMLLoader;
@@ -7,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import ui.ResizeHelper;
 
 public class ChattyLauncher extends ExtensionFormCreator {
 
@@ -19,7 +21,7 @@ public class ChattyLauncher extends ExtensionFormCreator {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/chatty-modern.fxml"));
         Parent root = loader.load();
 
-        stage.setTitle("Chatty");
+        stage.setTitle("controllers.Chatty");
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
 

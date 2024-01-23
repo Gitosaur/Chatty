@@ -1,3 +1,6 @@
+package websocket;
+
+import controllers.Chatty;
 import message.ChatMsg;
 import org.java_websocket.handshake.ServerHandshake;
 
