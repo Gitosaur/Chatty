@@ -106,8 +106,8 @@ public class Chatty extends ExtensionForm implements Initializable {
 
 
     @FXML public Label activeShortcutLabel;
-    @FXML public Button setShortcutButton;
-    @FXML public Button cancelShortcutButton;
+    @FXML public Button activeShortcutButton;
+
 
 
     @Override
@@ -131,7 +131,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
 
-        new HotKeyController(activeShortcutLabel, setShortcutButton, cancelShortcutButton, () -> {
+        new HotKeyController(activeShortcutLabel, activeShortcutButton, () -> {
             this.active = !this.active;
             activeToggle.setSelected(this.active);
             this.habboChatController.sendInformationMsg(this.active ? "activated":"deactivated");

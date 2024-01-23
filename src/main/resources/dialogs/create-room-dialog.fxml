@@ -34,8 +34,14 @@
           <RowConstraints vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label text="Name" />
-            <Label text="Password (optional)" GridPane.rowIndex="1" />
+            <Label text="Name">
+               <font>
+                  <Font size="13.0" />
+               </font></Label>
+            <Label text="Password (optional)" GridPane.rowIndex="1">
+               <font>
+                  <Font size="13.0" />
+               </font></Label>
             <TextField fx:id="chatroomNameInput" promptText="name" GridPane.columnIndex="1" />
             <TextField fx:id="chatroomPasswordInput" promptText="password" GridPane.columnIndex="1" GridPane.rowIndex="1" />
          </children>

@@ -9,62 +9,45 @@ import javafx.scene.control.Label;
 public class HotKeyController implements NativeKeyListener {
 
     private boolean keyPressed = false;
+    private boolean editing = false;
 
     private int activeKeyCode = -1;
-    private int pressedKeyCode;
 
     private Label activeShortcutLabel;
-    private Button setShortcutButton, cancelShortcutButton;
-
-    private boolean editing = false;
+    private Button activeShortcutButton;
 
     private Runnable onToggle;
 
-    public HotKeyController(Label activeShortcutLabel, Button setShortcutButton, Button cancelShortcutButton, Runnable onToggle) {
+
+    public HotKeyController(Label activeShortcutLabel, Button activeShortcutButton, Runnable onToggle) {
 
         this.activeShortcutLabel = activeShortcutLabel;
-        this.setShortcutButton = setShortcutButton;
-        this.cancelShortcutButton = cancelShortcutButton;
+        this.activeShortcutButton = activeShortcutButton;
+
         this.onToggle = onToggle;
 
-        this.cancelShortcutButton.setVisible(false);
-
-        this.setShortcutButton.setOnMouseClicked(e -> {
+        this.activeShortcutButton.setOnMouseClicked(e -> {
             if(!editing) {
                 editing = true;
                 Platform.runLater(() -> {
-                    this.cancelShortcutButton.setVisible(true);
-                    this.setShortcutButton.setText("confirm");
+                    this.activeShortcutButton.setText("cancel");
                     this.activeShortcutLabel.setText("Press any key...");
                     this.activeShortcutLabel.setOpacity(0.5);
                 });
             }else {
-                this.activeKeyCode = pressedKeyCode;
                 editing = false;
                 Platform.runLater(() -> {
-                    this.setShortcutButton.setText("set");
-                    this.cancelShortcutButton.setVisible(false);
+                    this.activeShortcutButton.setText("set");
                     this.activeShortcutLabel.setOpacity(1);
-                    activeShortcutLabel.setText(NativeKeyEvent.getKeyText(activeKeyCode));
+
+                    if(activeKeyCode == -1) {
+                        activeShortcutLabel.setText("None");
+                    }else {
+                        activeShortcutLabel.setText(NativeKeyEvent.getKeyText(activeKeyCode));
+                    }
                 });
             }
         });
-
-        this.cancelShortcutButton.setOnMouseClicked(e -> {
-            editing = false;
-            Platform.runLater(() -> {
-                this.cancelShortcutButton.setVisible(false);
-                this.setShortcutButton.setText("set");
-                this.activeShortcutLabel.setOpacity(1);
-                if(activeKeyCode == -1) {
-                    activeShortcutLabel.setText("None");
-                }else {
-                    activeShortcutLabel.setText(NativeKeyEvent.getKeyText(activeKeyCode));
-                }
-
-            });
-        });
-
 
 
         try {
@@ -81,13 +64,19 @@ public class HotKeyController implements NativeKeyListener {
         if(!editing && this.activeKeyCode != -1 && e.getKeyCode() == activeKeyCode) {
             onToggle.run();
         }
+        else if(!keyPressed && editing) {
+            this.activeKeyCode = e.getKeyCode();
+            this.keyPressed = true;
+            this.editing = false;
 
-        if(!keyPressed && editing) {
-            pressedKeyCode = e.getKeyCode();
-            keyPressed = true;
             Platform.runLater(() -> {
-                activeShortcutLabel.setText(NativeKeyEvent.getKeyText(pressedKeyCode));
                 this.activeShortcutLabel.setOpacity(1);
+                this.activeShortcutButton.setText("set");
+                if(activeKeyCode == -1) {
+                    activeShortcutLabel.setText("None");
+                }else {
+                    activeShortcutLabel.setText(NativeKeyEvent.getKeyText(activeKeyCode));
+                }
             });
         }
     }

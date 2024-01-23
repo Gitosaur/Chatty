@@ -53,7 +53,7 @@ public class ChatlogController {
                 box.getChildren().add(new Label(item.timestamp));
                 box.getChildren().add(new Label("["+item.room+"]"));
                 box.getChildren().add(item.user.getHabboHeadImage());
-                box.getChildren().add(new Label(item.user.getHabboName()));
+                box.getChildren().add(new Label(item.user.getHabboName()+": "));
                 box.getChildren().add(msgLabel);
 
                 setGraphic(box);
