@@ -1,3 +1,4 @@
+import entities.HabboInfo;
 import entities.Hotel;
 import gearth.extensions.parsers.HEntity;
 import gearth.protocol.HMessage;
@@ -177,6 +178,11 @@ public class HabboChatController {
             d.x = x;
             d.y = y;
             sendMovePacket(d.id, x, y, DUMMYS_HEIGHT_OFFSET);
+        }
+
+        HabboInfo self = chatty.getHabboInfo();
+        if(self.getHotel() == hotel && self.getHabboName().equals(habbo)) {
+            sendMovePacket(infoDummy.id, x, y, DUMMYS_HEIGHT_OFFSET);
         }
     }
 

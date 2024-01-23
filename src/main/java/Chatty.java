@@ -57,6 +57,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 //    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
     private static final String DEFAULT_WS_SERVER_URL = "ws://49.13.194.116:8000";
 
+
     private WebsocketClient ws;
 
     private HabboInfo habboInfo;
@@ -71,6 +72,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private ChatlogController chatlogController;
 
 
+    private boolean gEarthConnected;
     private boolean active; //secret chat active
     private boolean showHotelsInClient;
     private boolean receiveInformationInClient;
@@ -103,7 +105,9 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public ListView chatlogListView;
 
 
-    private boolean gEarthConnected;
+    @FXML public Label activeShortcutLabel;
+    @FXML public Button setShortcutButton;
+    @FXML public Button cancelShortcutButton;
 
 
     @Override
@@ -114,7 +118,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         this.gEarthConnected = false;
         this.active = true;
-        this.showHotelsInClient = true;
+        this.showHotelsInClient = false;
         this.receiveInformationInClient = true;
         this.showTypingSpeechBubble = true;
 
@@ -126,6 +130,12 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
 
         websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
+
+        new HotKeyController(activeShortcutLabel, setShortcutButton, cancelShortcutButton, () -> {
+            this.active = !this.active;
+            activeToggle.setSelected(this.active);
+            this.habboChatController.sendInformationMsg(this.active ? "activated":"deactivated");
+        });
 
         initializeRadioButtons();
     }
@@ -975,6 +985,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     public boolean isGearthConnected() {
         return this.gEarthConnected;
     }
+
 }
 
 

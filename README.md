@@ -31,6 +31,8 @@ At the bottom left you can activate or deactivate the Chatty client. When activa
 - Chatting cross-room and cross-hotel
 - End-to-end encrypted
 - Hashed chatroom passwords
+- No typing cooldowns
+- Chat without the fear of getting banend
 
 ## How it works
 

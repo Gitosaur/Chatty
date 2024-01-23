@@ -55,7 +55,7 @@
              <version>20211205</version>
          </dependency>
 
-        <!--   for toggle switch      -->
+        <!--   for toggle switch, sadly not compatible with java 1.8   -->
 <!--        <dependency>-->
 <!--            <groupId>org.controlsfx</groupId>-->
 <!--            <artifactId>controlsfx</artifactId>-->
@@ -63,12 +63,18 @@
 <!--        </dependency>-->
 
 
-         <!-- https://mvnrepository.com/artifact/de.jensd/fontawesomefx -->
         <dependency>
             <groupId>de.jensd</groupId>
             <artifactId>fontawesomefx</artifactId>
             <version>8.9</version>
         </dependency>
+
+
+         <dependency>
+            <groupId>com.github.kwhat</groupId>
+            <artifactId>jnativehook</artifactId>
+            <version>2.2.2</version>
+         </dependency>
 
 
      </dependencies>
@@ -96,10 +102,10 @@
                 <archive>
                     <manifest>
                         <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-<!--                        <addClasspath>true</addClasspath>-->
-<!--                        <classpathPrefix>lib/</classpathPrefix>-->
+                        <addClasspath>true</addClasspath>
+                        <classpathPrefix>lib/</classpathPrefix>
                         <mainClass>ChattyLauncher</mainClass>
-<!--                        <useUniqueVersions>false</useUniqueVersions>-->
+                        <useUniqueVersions>false</useUniqueVersions>
                     </manifest>
                 </archive>
             </configuration>
