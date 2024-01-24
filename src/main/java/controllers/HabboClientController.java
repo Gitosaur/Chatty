@@ -11,22 +11,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class HabboChatController {
+public class HabboClientController {
 
     private static final double DUMMYS_HEIGHT_OFFSET = 600;
     private Chatty chatty;
 
     private Dummy infoDummy;
-    private String infoDummyUserName = "[controllers.Chatty]";
-    private String infoDummyMission = "";
-    private String infoDummyFigureStr = "hd-4287-29.ch-4025-1428-95.lg-4017-1428-95.sh-4016-1243-110";
-    private String infoDummySex = "M";
-    private int infoDummyChatBubble = 31;
+    private final String infoDummyUserName = "[Chatty]";
+    private final String infoDummyMission = "";
+    private final String infoDummyFigureStr = "hd-4287-29.ch-4025-1428-95.lg-4017-1428-95.sh-4016-1243-110";
+    private final String infoDummySex = "M";
+    private final int infoDummyChatBubble = 31;
 
     private List<Dummy> dummys;
     private int chatbubbleId;
 
-    public HabboChatController(Chatty chatty) {
+    public HabboClientController(Chatty chatty) {
         this.chatty = chatty;
         this.dummys = new ArrayList<Dummy>();
         this.chatbubbleId = -1;
@@ -167,9 +167,11 @@ public class HabboChatController {
         HPacket packet = hMessage.getPacket();
         packet.readInteger();
         int index = packet.readInteger();
-        if(index == chatty.getHabboInfo().getIndex()) {
+        int habboInfoIdx = chatty.getHabboInfo().getIndex();
+        if(habboInfoIdx != -1 && index == habboInfoIdx) {
             int x = packet.readInteger();
             int y = packet.readInteger();
+            chatty.getHabboInfo().setCoords(x, y);
             chatty.sendUserMoved(x, y);
         }
     }

@@ -20,6 +20,8 @@ public class HabboInfo implements JSONSerializable {
     private Image headImg;
     private boolean imageLoading;
 
+    private int x, y; //coords in the room
+
     public HabboInfo() {
         this.imageLoading = false;
     }
@@ -126,5 +128,18 @@ public class HabboInfo implements JSONSerializable {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setCoords(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 }

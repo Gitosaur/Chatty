@@ -10,15 +10,15 @@ import java.util.HashMap;
 
 public class ChatbubbleController {
 
-    private HabboChatController habboChatController;
+    private HabboClientController habboClientController;
     private ComboBox<Image> comboBox;
     private HashMap<Integer, Integer> choices;
 
     private static final int[] chatbubbleIds = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 35, 36, 37, 38, 120, 121, 130, 131, 132, 133, 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1010, 1011, 1012, 1013, 1014};
 
 
-    public ChatbubbleController(HabboChatController habboChatController, ComboBox<Image> comboBox) {
-        this.habboChatController = habboChatController;
+    public ChatbubbleController(HabboClientController habboClientController, ComboBox<Image> comboBox) {
+        this.habboClientController = habboClientController;
         this.comboBox = comboBox;
         this.choices = new HashMap<>();
 
@@ -33,7 +33,7 @@ public class ChatbubbleController {
         comboBox.setOnAction((event) -> {
            int selectedIndex = comboBox.getSelectionModel().getSelectedIndex();
            int bubbleId = choices.get(selectedIndex);
-           this.habboChatController.setChatbubble(bubbleId);
+           this.habboClientController.setChatbubble(bubbleId);
         });
 
 

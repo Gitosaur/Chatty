@@ -131,7 +131,7 @@
                 <descriptorRefs>
                     <descriptorRef>jar-with-dependencies</descriptorRef>
                 </descriptorRefs>
-                <finalName>controllers.Chatty</finalName>
+                <finalName>Chatty</finalName>
                 <appendAssemblyId>false</appendAssemblyId>
             </configuration>
         </plugin>

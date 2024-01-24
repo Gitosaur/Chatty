@@ -1,9 +1,5 @@
 package controllers;
 
-import controllers.ChatbubbleController;
-import controllers.ChatlogController;
-import controllers.HabboChatController;
-import controllers.HotKeyController;
 import crypto.AES;
 import crypto.CryptoUtils;
 import crypto.DiffieHellman;
@@ -17,6 +13,8 @@ import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import gearth.protocol.connection.HClient;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -65,10 +63,10 @@ public class Chatty extends ExtensionForm implements Initializable {
 //    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
     private static final String DEFAULT_WS_SERVER_URL = "ws://49.13.194.116:8000";
 
-
     private WebsocketClient ws;
+    private boolean waitForChattyServerConnection;
 
-    private HabboInfo habboInfo;
+    private HabboInfo habboInfo; //the info of this user running the chatty client
     private Hotel hotel;
 
     private LinkedHashMap<String, Chatroom> chatrooms;
@@ -76,15 +74,17 @@ public class Chatty extends ExtensionForm implements Initializable {
     // when joining a room, a new DH key exchange is taking place - the key is stored here
     private HashMap<String, DiffieHellman> chatroomRequests;
 
-    private HabboChatController habboChatController;
+    private HabboClientController habboClientController;
     private ChatlogController chatlogController;
-
+    private AntiIdleController antiIdleController;
 
     private boolean gEarthConnected;
     private boolean active; //secret chat active
     private boolean showHotelsInClient;
     private boolean receiveInformationInClient;
-    private boolean showTypingSpeechBubble;
+    private boolean antiIdleEnabled;
+
+    private boolean showTypingIndicator, hideTypingIndicator, hideTypingIndicatorWhenActive;
 
     private Stage stage;
 
@@ -95,7 +95,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     @FXML public RadioButton activeToggle;
     @FXML public RadioButton alwaysOnTopToggle;
-    @FXML public RadioButton showTypingSpeechBubbleToggle;
+    @FXML public RadioButton antiIdleRadioButton;
 
     @FXML public Circle serverStatusCircle;
     @FXML public Label serverConnectStatusLabel;
@@ -116,6 +116,10 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public Label activeShortcutLabel;
     @FXML public Button activeShortcutButton;
 
+    @FXML public ToggleGroup typingIndicatorToggleGroup;
+    @FXML public RadioButton alwaysShowTypingIndicator;
+    @FXML public RadioButton alwaysHideTypingIndicator;
+    @FXML public RadioButton hideWhenActiveTypingIndicator;
 
 
     @Override
@@ -128,7 +132,11 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.active = true;
         this.showHotelsInClient = false;
         this.receiveInformationInClient = true;
-        this.showTypingSpeechBubble = true;
+        this.antiIdleEnabled = true;
+
+        this.showTypingIndicator = false;
+        this.hideTypingIndicator = false;
+        this.hideTypingIndicatorWhenActive = false;
 
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
@@ -142,13 +150,24 @@ public class Chatty extends ExtensionForm implements Initializable {
         new HotKeyController(activeShortcutLabel, activeShortcutButton, () -> {
             this.active = !this.active;
             activeToggle.setSelected(this.active);
-            this.habboChatController.sendInformationMsg(this.active ? "activated":"deactivated");
+            this.habboClientController.sendInformationMsg(this.active ? "activated":"deactivated");
         });
+
+        this.antiIdleController = new AntiIdleController(this, this.antiIdleEnabled);
 
         initializeRadioButtons();
     }
 
     private void initializeRadioButtons() {
+
+        this.hideTypingIndicatorWhenActive = true;
+        typingIndicatorToggleGroup.selectToggle(this.hideWhenActiveTypingIndicator);
+        typingIndicatorToggleGroup.selectedToggleProperty().addListener((ov, old_toggle, new_toggle) -> {
+            this.hideTypingIndicator = alwaysHideTypingIndicator.isSelected();
+            this.showTypingIndicator = alwaysShowTypingIndicator.isSelected();
+            this.hideTypingIndicatorWhenActive = hideWhenActiveTypingIndicator.isSelected();
+        });
+
         this.activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.active = newValue);
 
@@ -161,14 +180,17 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
         this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.showHotelsInClient = newValue;
-            if(habboChatController != null)
-                habboChatController.respawnUserDummys();
+            if(habboClientController != null)
+                habboClientController.respawnUserDummys();
         });
 
-        this.showTypingSpeechBubbleToggle.setSelected(this.showTypingSpeechBubble);
-        this.showTypingSpeechBubbleToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.showTypingSpeechBubble = newValue);
-
         this.websocketServerUrlTextField.textProperty().addListener((observable, oldValue, newValue) -> websocketServerUrlOnChange(newValue));
+
+        this.antiIdleRadioButton.setSelected(this.antiIdleEnabled);
+        this.antiIdleRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.antiIdleEnabled = newValue;
+            this.antiIdleController.setEnabled(newValue);
+        });
 
         this.updateServerStatusUi();
     }
@@ -177,8 +199,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     protected void initExtension() {
         onConnect(this::onGearthConnect);
 
-        this.habboChatController = new HabboChatController(this);
-        new ChatbubbleController(habboChatController, this.chatbubbleComboBox);
+        this.habboClientController = new HabboClientController(this);
+        new ChatbubbleController(habboClientController, this.chatbubbleComboBox);
         this.chatlogController = new ChatlogController(this, this.chatlogListView);
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
@@ -191,8 +213,11 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.habboInfo = new HabboInfo(id, name, figure, sex, mission, hotel);
 
             //grab the url
-            String wsUrl = this.websocketServerUrlTextField.getText();
-            this.connectToWsServer(wsUrl);
+            if(waitForChattyServerConnection) {
+                waitForChattyServerConnection = false;
+                String wsUrl = this.websocketServerUrlTextField.getText();
+                this.connectToWsServer(wsUrl);
+            }
         });
     }
 
@@ -203,7 +228,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.gEarthConnected = false;
         this.chatrooms.clear();
         this.chatroomRequests.clear();
-        this.habboChatController.clearAllDummys();
+        this.habboClientController.clearAllDummys();
         if(ws != null) this.ws.close();
         this.updateUi();
     }
@@ -343,8 +368,6 @@ public class Chatty extends ExtensionForm implements Initializable {
                 String encryptedRoomKey = encryption[0];
                 String iv = encryption[1];
 
-                System.out.println("encryptedRoomKey: " + encryptedRoomKey);
-
                 ChatMsg msg = new ChatMsg("room_key");
                 ChatMsgData msgData = new ChatMsgData();
                 msg.setData(msgData);
@@ -382,7 +405,7 @@ public class Chatty extends ExtensionForm implements Initializable {
                     Hotel hotel = Hotel.valueOf(user.getString("hotel"));
 
                     userList.put(new HabboId(username, hotel), new HabboInfo(username, figureStr, sex, mission, hotel));
-                    this.habboChatController.addDummy(username, hotel, roomName, mission, figureStr, sex);
+                    this.habboClientController.addDummy(username, hotel, roomName, mission, figureStr, sex);
                 }catch(JSONException e) {
                     e.printStackTrace();
                     System.err.println("Could not extract data from JSON");
@@ -412,7 +435,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         Chatroom chatroom = this.chatrooms.get(room);
         if(chatroom == null || chatroom.getEncryption() == null) {
-            this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
+            this.habboClientController.sendInformationMsg("You don't have the room encryption key yet");
             System.err.println("No encryption for "+room);
             return;
         }
@@ -420,7 +443,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         String decrypted = this.chatrooms.get(room).getEncryption().decrypt(msg, iv);
 
         this.chatlogController.addChat(findUser(habbo, hotel), decrypted, room);
-        this.habboChatController.sendChat(habbo, hotel, room, decrypted, style, shout);
+        this.habboClientController.sendChat(habbo, hotel, room, decrypted, style, shout);
     }
 
     private void onUserLeft(ChatMsgData data) {
@@ -432,7 +455,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         boolean isSelf = isSelf(user, hotel);
 
         if(isMemberOfRoom(room))
-            habboChatController.sendInformationMsg((isSelf ? "You" : user) + " left "+ room);
+            habboClientController.sendInformationMsg((isSelf ? "You" : user) + " left "+ room);
 
         if(chatroom != null) {
             chatroom.removeUser(user, hotel);
@@ -440,7 +463,7 @@ public class Chatty extends ExtensionForm implements Initializable {
                 this.chatrooms.remove(chatroom.getName());
             }
         }
-        this.habboChatController.removeDummy(user, room);
+        this.habboClientController.removeDummy(user, room);
         updateUi();
     }
 
@@ -459,15 +482,18 @@ public class Chatty extends ExtensionForm implements Initializable {
         Chatroom chatroom = chatrooms.get(room);
         if(chatroom != null){
             chatroom.addUser(userInfo);
-        }else {
-            //TODO create room
         }
-        this.habboChatController.addDummy(username, hotel, room, mission, figure, sex);
+
+        this.habboClientController.addDummy(username, hotel, room, mission, figure, sex);
         boolean isSelf = isSelf(username, hotel);
 
         if(isMemberOfRoom(room)){
-            chatroom.setExpanded(true);
-            habboChatController.sendInformationMsg((isSelf ? "You" : username) + " joined "+ room);
+            if(isSelf) chatroom.setExpanded(true);
+            habboClientController.sendInformationMsg((isSelf ? "You" : username) + " joined "+ room);
+
+            if(this.habboInfo.getX() != 0 && this.habboInfo.getY() != 0){
+                this.sendUserMoved(this.habboInfo.getX(), this.habboInfo.getY());
+            }
         }
         updateUi();
     }
@@ -502,11 +528,11 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         room.addUser(creatorInfo);
         this.chatrooms.put(roomName, room);
-        this.habboChatController.addDummy(username, hotel, roomName, mission, figureStr, sex);
+        this.habboClientController.addDummy(username, hotel, roomName, mission, figureStr, sex);
 
         if(isMemberOfRoom(roomName)) {
             room.setExpanded(true);
-            habboChatController.sendInformationMsg((username.equals(this.habboInfo.getHabboName()) ? "You" : username) + " joined "+ roomName);
+            habboClientController.sendInformationMsg((username.equals(this.habboInfo.getHabboName()) ? "You" : username) + " joined "+ roomName);
         }
 
         updateUi();
@@ -634,12 +660,12 @@ public class Chatty extends ExtensionForm implements Initializable {
         String status = (String) data.get("status");
         if(status != null && status.equals("success")){
             System.out.println("Connected to Websocket server!!");
-            this.habboChatController.sendInformationMsg("Connected to server");
+            this.habboClientController.sendInformationMsg("Connected to server");
             ws.setConnected(true);
             ws.send(new ChatMsg("show_rooms"));
         }else {
             System.out.println("Connection to Websocket server failed");
-            this.habboChatController.sendInformationMsg("Connection to server failed");
+            this.habboClientController.sendInformationMsg("Connection to server failed");
             showErrorDialog((String) data.get("message"));
             ws.setConnected(false);
         }
@@ -649,8 +675,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     public void onWebsocketDisconnect() {
         this.chatrooms.clear();
         if(gEarthConnected){
-            this.habboChatController.sendInformationMsg("Disconnected from server");
-            this.habboChatController.clearAllDummys();
+            this.habboClientController.sendInformationMsg("Disconnected from server");
+            this.habboClientController.clearAllDummys();
         }
         this.updateUi();
     }
@@ -665,6 +691,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         if(ws == null) {
             setStatusConnectingUi();
+            this.waitForChattyServerConnection = true;
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
             return;
         }
@@ -673,6 +700,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
             setStatusConnectingUi();
+            this.waitForChattyServerConnection = true;
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }
     }
@@ -697,6 +725,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         if(ws == null || !ws.isConnected()){
             setStatusConnectingUi();
+            this.waitForChattyServerConnection = true;
             // this triggers a websocket connect on User
             sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
         }else {
@@ -843,7 +872,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         }
 
         if(room == null) {
-            habboChatController.sendInformationMsg("You are in no rooms");
+            habboClientController.sendInformationMsg("You are in no rooms");
             return;
         }
 
@@ -851,7 +880,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         ChatMsgData data = new ChatMsgData();
 
         if(room.getEncryption() == null){
-            this.habboChatController.sendInformationMsg("You don't have the room encryption key yet");
+            this.habboClientController.sendInformationMsg("You don't have the room encryption key yet");
             return;
         }
 
@@ -883,7 +912,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         String room = (String) data.get("room");
         int x = (int) data.get("x");
         int y = (int) data.get("y");
-        habboChatController.moveDummy(username, hotel, room, x, y);
+        habboClientController.moveDummy(username, hotel, room, x, y);
     }
 
 
@@ -979,7 +1008,10 @@ public class Chatty extends ExtensionForm implements Initializable {
     }
 
     public boolean showTypingSpeechBubble() {
-        return this.showTypingSpeechBubble;
+        if(showTypingIndicator) return true;
+        else if(hideTypingIndicator) return false;
+        else if(hideTypingIndicatorWhenActive && active) return false;
+        else return true;
     }
 
     public boolean isActive() {

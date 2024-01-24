@@ -63,7 +63,7 @@ public class HotKeyController implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent e) {
-        if(!editing && this.activeKeyCode != -1 && e.getKeyCode() == activeKeyCode) {
+        if(!editing && this.activeKeyCode != -1 && e.getKeyCode() == activeKeyCode && onToggle != null) {
             onToggle.run();
         }
         else if(!keyPressed && editing) {
