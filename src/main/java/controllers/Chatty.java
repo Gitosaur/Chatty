@@ -52,7 +52,7 @@ import java.util.ResourceBundle;
 
 @ExtensionInfo(
         Title =  "Chatty",
-        Description =  "Private messenger - cross-room, cross-hotel",
+        Description =  "Hidden chat - cross-room, cross-hotel",
         Version =  "2.2",
         Author =  "Gitosaur"
 )
