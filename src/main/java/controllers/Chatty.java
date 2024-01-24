@@ -53,7 +53,7 @@ import java.util.ResourceBundle;
 @ExtensionInfo(
         Title =  "Chatty",
         Description =  "Private messenger - cross-room, cross-hotel",
-        Version =  "2.1",
+        Version =  "2.2",
         Author =  "Gitosaur"
 )
 public class Chatty extends ExtensionForm implements Initializable {
@@ -82,6 +82,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private boolean showHotelsInClient;
     private boolean receiveInformationInClient;
     private boolean antiIdleEnabled;
+    private boolean alwaysOnTop;
 
     private boolean showTypingIndicator, hideTypingIndicator, hideTypingIndicatorWhenActive;
 
@@ -180,8 +181,10 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.active = newValue);
 
-        this.alwaysOnTopToggle.setSelected(cacheController.optBool("alwaysOnTop", false));
+        this.alwaysOnTop = cacheController.optBool("alwaysOnTop", false);
+        this.alwaysOnTopToggle.setSelected(alwaysOnTop);
         this.alwaysOnTopToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.alwaysOnTop = newValue;
             this.stage.setAlwaysOnTop(newValue);
             cacheController.put("alwaysOnTop", newValue);
         });
@@ -943,6 +946,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        this.stage.setAlwaysOnTop(this.alwaysOnTop);
     }
 
     public void minimizeWindow(ActionEvent e) {
