@@ -720,8 +720,10 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         if(ws == null) {
             setStatusConnectingUi();
-            this.waitForChattyServerConnection = true;
-            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            if(!this.waitForChattyServerConnection){
+                this.waitForChattyServerConnection = true;
+                sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            }
             return;
         }
 
@@ -729,8 +731,10 @@ public class Chatty extends ExtensionForm implements Initializable {
         if((ws.getURI().toString().equals(wsUrl) && !ws.isConnected()) ||
              !ws.getURI().toString().equals(wsUrl)){
             setStatusConnectingUi();
-            this.waitForChattyServerConnection = true;
-            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            if(!this.waitForChattyServerConnection){
+                this.waitForChattyServerConnection = true;
+                sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            }
         }
     }
 
@@ -754,9 +758,11 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         if(ws == null || !ws.isConnected()){
             setStatusConnectingUi();
-            this.waitForChattyServerConnection = true;
-            // this triggers a websocket connect on User
-            sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            if(!this.waitForChattyServerConnection){
+                this.waitForChattyServerConnection = true;
+                // this triggers a websocket connect on User
+                sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER));
+            }
         }else {
             Optional<ButtonType> result = showConfirmDialog("Do you want to disconnect from the server?");
             unblurMainWindow();
