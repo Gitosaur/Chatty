@@ -13,8 +13,6 @@ import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import gearth.protocol.connection.HClient;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -115,11 +113,12 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     @FXML public Label activeShortcutLabel;
     @FXML public Button activeShortcutButton;
+    @FXML public Button deleteActiveToggleHotkeyButton;
 
     @FXML public ToggleGroup typingIndicatorToggleGroup;
-    @FXML public RadioButton alwaysShowTypingIndicator;
-    @FXML public RadioButton alwaysHideTypingIndicator;
-    @FXML public RadioButton hideWhenActiveTypingIndicator;
+    @FXML public RadioButton showTypingIndicatorRadioButton;
+    @FXML public RadioButton hideTypingIndicatorRadioButton;
+    @FXML public RadioButton hideTypingIndicatorWhenActiveRadioButton;
 
 
     @Override
@@ -147,7 +146,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
 
-        new HotKeyController(activeShortcutLabel, activeShortcutButton, () -> {
+        new HotKeyController(activeShortcutLabel, activeShortcutButton, deleteActiveToggleHotkeyButton, () -> {
             this.active = !this.active;
             activeToggle.setSelected(this.active);
             this.habboClientController.sendInformationMsg(this.active ? "activated":"deactivated");
@@ -161,11 +160,11 @@ public class Chatty extends ExtensionForm implements Initializable {
     private void initializeRadioButtons() {
 
         this.hideTypingIndicatorWhenActive = true;
-        typingIndicatorToggleGroup.selectToggle(this.hideWhenActiveTypingIndicator);
+        typingIndicatorToggleGroup.selectToggle(this.hideTypingIndicatorWhenActiveRadioButton);
         typingIndicatorToggleGroup.selectedToggleProperty().addListener((ov, old_toggle, new_toggle) -> {
-            this.hideTypingIndicator = alwaysHideTypingIndicator.isSelected();
-            this.showTypingIndicator = alwaysShowTypingIndicator.isSelected();
-            this.hideTypingIndicatorWhenActive = hideWhenActiveTypingIndicator.isSelected();
+            this.hideTypingIndicator = hideTypingIndicatorRadioButton.isSelected();
+            this.showTypingIndicator = showTypingIndicatorRadioButton.isSelected();
+            this.hideTypingIndicatorWhenActive = hideTypingIndicatorWhenActiveRadioButton.isSelected();
         });
 
         this.activeToggle.setSelected(this.active);

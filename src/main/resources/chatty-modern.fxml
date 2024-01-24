@@ -103,6 +103,7 @@
                                                                </font>
                                                             </Label>
                                                             <Button fx:id="activeShortcutButton" mnemonicParsing="false" text="set" />
+                                                            <Button fx:id="deleteActiveToggleHotkeyButton" mnemonicParsing="false" text="delete" />
                                                          </children>
                                                       </HBox>
                                                    </children>
@@ -128,7 +129,7 @@
                                                             <Font size="13.0" />
                                                          </font>
                                                       </Label>
-                                                      <RadioButton fx:id="alwaysShowTypingIndicator" mnemonicParsing="false" prefHeight="19.0" prefWidth="272.0" text="Always show">
+                                                      <RadioButton fx:id="showTypingIndicatorRadioButton" mnemonicParsing="false" prefHeight="19.0" prefWidth="272.0" text="Always show">
                                                          <font>
                                                             <Font size="13.0" />
                                                          </font>
@@ -136,12 +137,12 @@
                                                             <ToggleGroup fx:id="typingIndicatorToggleGroup" />
                                                          </toggleGroup>
                                                       </RadioButton>
-                                                      <RadioButton fx:id="alwaysHideTypingIndicator" mnemonicParsing="false" prefHeight="19.0" prefWidth="272.0" text="Always hide" toggleGroup="$typingIndicatorToggleGroup">
+                                                      <RadioButton fx:id="hideTypingIndicatorRadioButton" mnemonicParsing="false" prefHeight="19.0" prefWidth="272.0" text="Always hide" toggleGroup="$typingIndicatorToggleGroup">
                                                          <font>
                                                             <Font size="13.0" />
                                                          </font>
                                                       </RadioButton>
-                                                      <RadioButton fx:id="hideWhenActiveTypingIndicator" mnemonicParsing="false" prefHeight="19.0" prefWidth="294.0" text="Hide only when active" toggleGroup="$typingIndicatorToggleGroup">
+                                                      <RadioButton fx:id="hideTypingIndicatorWhenActiveRadioButton" mnemonicParsing="false" prefHeight="19.0" prefWidth="294.0" text="Hide only when active" toggleGroup="$typingIndicatorToggleGroup">
                                                          <font>
                                                             <Font size="13.0" />
                                                          </font>
