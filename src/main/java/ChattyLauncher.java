@@ -21,7 +21,7 @@ public class ChattyLauncher extends ExtensionFormCreator {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/chatty-modern.fxml"));
         Parent root = loader.load();
 
-        stage.setTitle("controllers.Chatty");
+        stage.setTitle("Chatty");
         Scene scene = new Scene(root);
         scene.setFill(Color.TRANSPARENT);
 
