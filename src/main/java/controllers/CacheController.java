@@ -8,14 +8,11 @@ import java.net.URISyntaxException;
 
 public class CacheController {
 
-    private Chatty chatty;
     private JSONObject cacheContents;
 
-    public CacheController(Chatty chatty) {
-        this.chatty = chatty;
+    public CacheController() {
         setupCache();
     }
-
 
     private void setupCache() {
         File extDir = null;
@@ -29,22 +26,6 @@ public class CacheController {
         this.cacheContents = Cacher.getCacheContents();
     }
 
-    private void loadCache() {
-
-//        chatty server url
-
-//        active chatbubble
-
-//        toggle shortcut
-
-//        receive chat info in client
-
-//        show hotels in client
-
-//        typing indicator setting
-
-//        always on top
-    }
 
     public boolean has(String key) {
         return cacheContents.has(key);

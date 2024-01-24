@@ -124,7 +124,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        this.cacheController = new CacheController(this);
+        this.cacheController = new CacheController();
 
         this.chatrooms = new LinkedHashMap<String, Chatroom>();
         this.chatroomRequests = new HashMap<>();
