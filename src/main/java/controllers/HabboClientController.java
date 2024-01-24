@@ -168,7 +168,7 @@ public class HabboClientController {
         packet.readInteger();
         int index = packet.readInteger();
         int habboInfoIdx = chatty.getHabboInfo().getIndex();
-        if(habboInfoIdx != -1 && index == habboInfoIdx) {
+        if(index == habboInfoIdx) {
             int x = packet.readInteger();
             int y = packet.readInteger();
             chatty.getHabboInfo().setCoords(x, y);

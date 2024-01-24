@@ -20,16 +20,24 @@ public class HotKeyController implements NativeKeyListener {
 
     private Runnable onToggle;
 
+    private CacheController cacheController;
 
-    public HotKeyController(Label activeShortcutLabel, Button activeShortcutButton, Button deleteActiveShortcutButton, Runnable onToggle) {
+    public HotKeyController(CacheController cacheController, Label activeShortcutLabel, Button activeShortcutButton, Button deleteActiveShortcutButton, Runnable onToggle) {
 
+        this.cacheController = cacheController;
         this.activeShortcutLabel = activeShortcutLabel;
         this.activeShortcutButton = activeShortcutButton;
         this.deleteActiveShortcutButton = deleteActiveShortcutButton;
 
         this.onToggle = onToggle;
 
-        Platform.runLater(() -> this.deleteActiveShortcutButton.setVisible(false));
+
+        if(cacheController.has("toggleActiveHotKey")) {
+            this.activeKeyCode = cacheController.getInt("toggleActiveHotKey");
+            Platform.runLater(() -> activeShortcutLabel.setText(NativeKeyEvent.getKeyText(activeKeyCode)));
+        }
+
+        Platform.runLater(() -> this.deleteActiveShortcutButton.setVisible(activeKeyCode != -1));
 
         this.deleteActiveShortcutButton.setOnMouseClicked(e -> {
             if(this.activeKeyCode == -1) {
@@ -37,6 +45,7 @@ public class HotKeyController implements NativeKeyListener {
             }
 
             this.activeKeyCode = -1;
+            cacheController.remove("toggleActiveHotKey");
             Platform.runLater(() -> {
                 this.activeShortcutButton.setText("set");
                 this.deleteActiveShortcutButton.setVisible(false);
@@ -91,6 +100,12 @@ public class HotKeyController implements NativeKeyListener {
             this.activeKeyCode = e.getKeyCode();
             this.keyPressed = true;
             this.editing = false;
+
+            if(activeKeyCode != -1){
+                cacheController.put("toggleActiveHotKey", activeKeyCode);
+            }else {
+                cacheController.remove("toggleActiveHotKey");
+            }
 
             Platform.runLater(() -> {
                 this.activeShortcutLabel.setOpacity(1);

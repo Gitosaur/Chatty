@@ -75,6 +75,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private HabboClientController habboClientController;
     private ChatlogController chatlogController;
     private AntiIdleController antiIdleController;
+    private CacheController cacheController;
 
     private boolean gEarthConnected;
     private boolean active; //secret chat active
@@ -123,19 +124,33 @@ public class Chatty extends ExtensionForm implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.cacheController = new CacheController(this);
 
         this.chatrooms = new LinkedHashMap<String, Chatroom>();
         this.chatroomRequests = new HashMap<>();
 
         this.gEarthConnected = false;
         this.active = true;
-        this.showHotelsInClient = false;
-        this.receiveInformationInClient = true;
-        this.antiIdleEnabled = true;
+        this.showHotelsInClient = cacheController.optBool("showHotelsInClient", false);
+        this.receiveInformationInClient = cacheController.optBool("receiveInformationInClient", true);
+        this.antiIdleEnabled = cacheController.optBool("antiIdleEnabled", true);
 
-        this.showTypingIndicator = false;
-        this.hideTypingIndicator = false;
-        this.hideTypingIndicatorWhenActive = false;
+
+        String typingIndicator = cacheController.optString("typingIndicator", "hideWhenActive");
+        switch(typingIndicator) {
+            case "show":
+                this.showTypingIndicator = true;
+                this.typingIndicatorToggleGroup.selectToggle(showTypingIndicatorRadioButton);
+                break;
+            case "hide":
+                this.hideTypingIndicator = true;
+                this.typingIndicatorToggleGroup.selectToggle(hideTypingIndicatorRadioButton);
+                break;
+            case "hideWhenActive":
+                this.hideTypingIndicatorWhenActive = true;
+                this.typingIndicatorToggleGroup.selectToggle(hideTypingIndicatorWhenActiveRadioButton);
+                break;
+        }
 
         this.createRoomButton.setVisible(false);
         this.opaqueLayer.setVisible(false);
@@ -144,41 +159,43 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomsView.setRoot(new TreeItem());
         this.chatroomsView.setCellFactory(treeView -> new ChatroomTreeCell(this));
 
-        websocketServerUrlTextField.setText(DEFAULT_WS_SERVER_URL);
-
-        new HotKeyController(activeShortcutLabel, activeShortcutButton, deleteActiveToggleHotkeyButton, () -> {
-            this.active = !this.active;
-            activeToggle.setSelected(this.active);
-            this.habboClientController.sendInformationMsg(this.active ? "activated":"deactivated");
-        });
-
-        this.antiIdleController = new AntiIdleController(this, this.antiIdleEnabled);
+        websocketServerUrlTextField.setText(cacheController.optString("serverUrl", DEFAULT_WS_SERVER_URL));
 
         initializeRadioButtons();
     }
 
     private void initializeRadioButtons() {
 
-        this.hideTypingIndicatorWhenActive = true;
-        typingIndicatorToggleGroup.selectToggle(this.hideTypingIndicatorWhenActiveRadioButton);
         typingIndicatorToggleGroup.selectedToggleProperty().addListener((ov, old_toggle, new_toggle) -> {
             this.hideTypingIndicator = hideTypingIndicatorRadioButton.isSelected();
+            if(this.hideTypingIndicator) cacheController.put("typingIndicator", "hide");
+
             this.showTypingIndicator = showTypingIndicatorRadioButton.isSelected();
+            if(this.showTypingIndicator) cacheController.put("typingIndicator", "show");
+
             this.hideTypingIndicatorWhenActive = hideTypingIndicatorWhenActiveRadioButton.isSelected();
+            if(this.hideTypingIndicatorWhenActive) cacheController.put("typingIndicator", "hideWhenActive");
         });
 
         this.activeToggle.setSelected(this.active);
         this.activeToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.active = newValue);
 
-        this.alwaysOnTopToggle.setSelected(false);
-        this.alwaysOnTopToggle.selectedProperty().addListener((observable, oldValue, newValue) -> this.stage.setAlwaysOnTop(newValue));
+        this.alwaysOnTopToggle.setSelected(cacheController.optBool("alwaysOnTop", false));
+        this.alwaysOnTopToggle.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.stage.setAlwaysOnTop(newValue);
+            cacheController.put("alwaysOnTop", newValue);
+        });
 
         this.receiveInfoInClientRadioButton.setSelected(this.receiveInformationInClient);
-        this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> this.receiveInformationInClient = newValue);
+        this.receiveInfoInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.receiveInformationInClient = newValue;
+            cacheController.put("receiveInformationInClient", newValue);
+        });
 
         this.showHotelsInClientRadioButton.setSelected(this.showHotelsInClient);
         this.showHotelsInClientRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.showHotelsInClient = newValue;
+            this.cacheController.put("showHotelsInClient", newValue);
             if(habboClientController != null)
                 habboClientController.respawnUserDummys();
         });
@@ -188,6 +205,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.antiIdleRadioButton.setSelected(this.antiIdleEnabled);
         this.antiIdleRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             this.antiIdleEnabled = newValue;
+            this.cacheController.put("antiIdleEnabled", newValue);
             this.antiIdleController.setEnabled(newValue);
         });
 
@@ -199,17 +217,25 @@ public class Chatty extends ExtensionForm implements Initializable {
         onConnect(this::onGearthConnect);
 
         this.habboClientController = new HabboClientController(this);
-        new ChatbubbleController(habboClientController, this.chatbubbleComboBox);
         this.chatlogController = new ChatlogController(this, this.chatlogListView);
+        this.antiIdleController = new AntiIdleController(this, this.antiIdleEnabled);
+
+        new ChatbubbleController(habboClientController, cacheController, this.chatbubbleComboBox);
+        new HotKeyController(cacheController, activeShortcutLabel, activeShortcutButton, deleteActiveToggleHotkeyButton,
+            () -> {
+                this.active = !this.active;
+                activeToggle.setSelected(this.active);
+                this.habboClientController.sendInformationMsg(this.active ? "activated" : "deactivated");
+            });
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
-            int id = packet.readInteger();
+            int id = packet.readInteger(); //ignore id
             String name = packet.readString();
             String figure = packet.readString();
             String sex = packet.readString();
             String mission = packet.readString();
-            this.habboInfo = new HabboInfo(id, name, figure, sex, mission, hotel);
+            this.habboInfo = new HabboInfo(-1, name, figure, sex, mission, hotel);
 
             //grab the url
             if(waitForChattyServerConnection) {
@@ -224,6 +250,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     protected void onEndConnection() {
         super.onEndConnection();
         System.out.println("GEARTH ON END CONNECTION");
+        this.antiIdleController.setEnabled(false);
+        this.antiIdleEnabled = false;
         this.gEarthConnected = false;
         this.chatrooms.clear();
         this.chatroomRequests.clear();
@@ -275,6 +303,7 @@ public class Chatty extends ExtensionForm implements Initializable {
     private void updateUi() {
         Platform.runLater(() -> {
             this.createRoomButton.setVisible(this.ws != null && this.ws.isConnected());
+            this.antiIdleRadioButton.setSelected(this.antiIdleEnabled);
             updateChatroomsUi();
             updateServerStatusUi();
             updateSettingsUi();
@@ -294,8 +323,6 @@ public class Chatty extends ExtensionForm implements Initializable {
             case "show_rooms": onShowRooms(msg.getData()); break;
             case "new_room": onNewRoom(msg.getData()); break;
             case "user_move": onUserMove(msg.getData()); break;
-            //case "room_info": onRoomInfo(msg.getData()); break; // not needed for gui version
-            //case "room_users": onRoomUsers(msg.getData()); break; // not needed for gui version
 
             case "room_key_request": onKeyRequest(msg.getData()); break;
             case "room_key": onKeyIncoming(msg.getData()); break;
@@ -490,7 +517,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             if(isSelf) chatroom.setExpanded(true);
             habboClientController.sendInformationMsg((isSelf ? "You" : username) + " joined "+ room);
 
-            if(this.habboInfo.getX() != 0 && this.habboInfo.getY() != 0){
+            if(this.habboInfo.getX() != 0 || this.habboInfo.getY() != 0){
                 this.sendUserMoved(this.habboInfo.getX(), this.habboInfo.getY());
             }
         }
@@ -575,7 +602,6 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.serverStatusCircle.setEffect(new DropShadow(5, connected));
             this.connectToggleButton.setText("disconnect");
         }
-
     }
 
     private void updateChatroomsUi() {
@@ -659,6 +685,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         String status = (String) data.get("status");
         if(status != null && status.equals("success")){
             System.out.println("Connected to Websocket server!!");
+            this.cacheController.put("serverUrl", ws.getURI().toString());
             this.habboClientController.sendInformationMsg("Connected to server");
             ws.setConnected(true);
             ws.send(new ChatMsg("show_rooms"));
@@ -871,7 +898,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         }
 
         if(room == null) {
-            habboClientController.sendInformationMsg("You are in no rooms");
+            habboClientController.sendInformationMsg("You are in no chatrooms");
             return;
         }
 
@@ -913,7 +940,6 @@ public class Chatty extends ExtensionForm implements Initializable {
         int y = (int) data.get("y");
         habboClientController.moveDummy(username, hotel, room, x, y);
     }
-
 
     public void setStage(Stage stage) {
         this.stage = stage;
