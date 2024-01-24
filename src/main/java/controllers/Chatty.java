@@ -51,9 +51,9 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 @ExtensionInfo(
-        Title =  "controllers.Chatty",
+        Title =  "Chatty",
         Description =  "Private messenger - cross-room, cross-hotel",
-        Version =  "2.0",
+        Version =  "2.1",
         Author =  "Gitosaur"
 )
 public class Chatty extends ExtensionForm implements Initializable {
