@@ -18,7 +18,7 @@ public class ChatlogController {
     private ListView<ChatInstance> listView;
     private ObservableList<ChatInstance> chatlist = FXCollections.observableArrayList();
 
-    public ChatlogController(Chatty chatty, ListView<ChatInstance> listView) {
+    public ChatlogController(ListView<ChatInstance> listView) {
         this.listView = listView;
         this.listView.setItems(chatlist);
         this.listView.setCellFactory(r -> new ChatCell());

@@ -220,7 +220,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         onConnect(this::onGearthConnect);
 
         this.habboClientController = new HabboClientController(this);
-        this.chatlogController = new ChatlogController(this, this.chatlogListView);
+        this.chatlogController = new ChatlogController(this.chatlogListView);
         this.antiIdleController = new AntiIdleController(this, this.antiIdleEnabled);
 
         new ChatbubbleController(habboClientController, cacheController, this.chatbubbleComboBox);

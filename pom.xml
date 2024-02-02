@@ -127,6 +127,10 @@
                     <manifest>
                         <mainClass>ChattyLauncher</mainClass>
                     </manifest>
+                    <manifestEntries>
+                        <Created-By>Gitosaur</Created-By>
+                        <Built-By>Gitosaur</Built-By>
+                    </manifestEntries>
                 </archive>
                 <descriptorRefs>
                     <descriptorRef>jar-with-dependencies</descriptorRef>
