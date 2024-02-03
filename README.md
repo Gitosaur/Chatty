@@ -18,7 +18,7 @@ This extension sends the following information to an external server:
 - The encrypted chat messages you type inside a chatroom and style of the chat bubble
 - Your current position inside a room (x,y coordinate)
 
-The Chatty server does not store any data.
+The Chatty server only stores your habbo information as long as you are connected.
 Users are responsible for the content of their messages. Users must also comply with Habbo's terms of use.
 By using Chatty, you confirm that you have read and understood these terms and agree to them.
 
