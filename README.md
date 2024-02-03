@@ -9,6 +9,18 @@ Chatty allows you to exchange end-to-end encrypted messages **using the normal H
 
 <img src="./screenshot.png" alt="image" width="50%" height="auto">
 
+## Terms of use
+
+This extension sends the following information to an external server:
+
+- Information of your Habbo: name, motto, figure (outfit), sex, hotel
+- Name of chatroom and hashed chatroom password
+- The encrypted chat messages you type inside a chatroom and style of the chat bubble
+- Your current position inside a room (x,y coordinate)
+
+The Chatty server does not store any data.
+Users are responsible for the content of their messages. Users must also comply with Habbo's terms of use.
+By using Chatty, you confirm that you have read and understood these terms and agree to them.
 
 ## How to use Chatty?
 
