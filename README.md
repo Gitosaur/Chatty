@@ -44,7 +44,7 @@ At the bottom left you can activate or deactivate the Chatty client. When activa
 - End-to-end encrypted
 - Hashed chatroom passwords
 - No typing cooldowns
-- Chat without the fear of getting banend
+- Chat without the fear of getting banned
 
 ## How it works
 
