@@ -53,7 +53,7 @@ import java.util.ResourceBundle;
 @ExtensionInfo(
         Title =  "Chatty",
         Description =  "Hidden chat - cross-room, cross-hotel",
-        Version =  "2.2",
+        Version =  "2.3",
         Author =  "Gitosaur"
 )
 public class Chatty extends ExtensionForm implements Initializable {
