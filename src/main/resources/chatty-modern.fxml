@@ -113,7 +113,7 @@
                                                    <font>
                                                       <Font size="13.0" />
                                                    </font></RadioButton>
-                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotels in client">
+                                                <RadioButton fx:id="showHotelsInClientRadioButton" mnemonicParsing="false" text="Show hotel next to name in chat">
                                                    <font>
                                                       <Font size="13.0" />
                                                    </font></RadioButton>
