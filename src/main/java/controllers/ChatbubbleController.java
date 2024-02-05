@@ -11,16 +11,15 @@ import java.util.HashMap;
 public class ChatbubbleController {
 
     private HabboClientController habboClientController;
-    private CacheController cacheController;
     private ComboBox<Image> comboBox;
     private HashMap<Integer, Integer> choices;
 
-    private static final int[] chatbubbleIds = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 30, 31, 32, 33, 35, 36, 37, 38, 120, 121, 130, 131, 132, 133, 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1010, 1011, 1012, 1013, 1014, 1015, 1016};
+    //chatbubble 34 does not display username
+    private static final int[] chatbubbleIds = {0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 35, 36, 37, 38, 120, 121, 130, 131, 132, 133, 1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1010, 1011, 1012, 1013, 1014, 1015, 1016};
 
 
     public ChatbubbleController(HabboClientController habboClientController, CacheController cacheController, ComboBox<Image> comboBox) {
         this.habboClientController = habboClientController;
-        this.cacheController = cacheController;
         this.comboBox = comboBox;
         this.choices = new HashMap<>();
 

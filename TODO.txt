@@ -1,0 +1,4 @@
+Habbo Effekt when active
+Mute normal habbo chat option
+papagei sprechblase
+AvatarExpression to get id inside room

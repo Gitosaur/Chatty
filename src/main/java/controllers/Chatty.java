@@ -136,6 +136,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.receiveInformationInClient = cacheController.optBool("receiveInformationInClient", true);
         this.antiIdleEnabled = cacheController.optBool("antiIdleEnabled", true);
 
+        this.habboInfo = new HabboInfo();
 
         String typingIndicator = cacheController.optString("typingIndicator", "hideWhenActive");
         switch(typingIndicator) {
@@ -233,18 +234,32 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         intercept(HMessage.Direction.TOCLIENT, "UserObject", hMessage -> {
             HPacket packet = hMessage.getPacket();
-            int id = packet.readInteger(); //ignore id
+            packet.readInteger(); //ignore id
             String name = packet.readString();
             String figure = packet.readString();
             String sex = packet.readString();
             String mission = packet.readString();
             this.habboInfo = new HabboInfo(-1, name, figure, sex, mission, hotel);
 
+
             //grab the url
             if(waitForChattyServerConnection) {
                 waitForChattyServerConnection = false;
                 String wsUrl = this.websocketServerUrlTextField.getText();
                 this.connectToWsServer(wsUrl);
+            }
+        });
+
+        //intercept an expression packet to get the index of yourself inside a room
+        intercept(HMessage.Direction.TOCLIENT, "Expression", hMessage -> {
+            if(this.habboInfo == null) return;
+            if(this.habboInfo.getIndex() == -1) {
+                int idx = hMessage.getPacket().readInteger();
+                int exp = hMessage.getPacket().readInteger();
+                if(this.habboInfo.getIndex() == -1 && exp == 0) {
+                    this.habboInfo.setIndex(idx);
+                    this.habboClientController.respawnUserDummys();
+                }
             }
         });
     }
@@ -688,6 +703,12 @@ public class Chatty extends ExtensionForm implements Initializable {
         String status = (String) data.get("status");
         if(status != null && status.equals("success")){
             System.out.println("Connected to Websocket server!!");
+
+            //get the habbo index inside of room (if habbo already is inside a room)
+            System.out.println(getHabboInfo().getIndex());
+            if(getHabboInfo().getIndex() == -1)
+                sendToServer(new HPacket("AvatarExpression", HMessage.Direction.TOSERVER, 0));
+
             this.cacheController.put("serverUrl", ws.getURI().toString());
             this.habboClientController.sendInformationMsg("Connected to server");
             ws.setConnected(true);

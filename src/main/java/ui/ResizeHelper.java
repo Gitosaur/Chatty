@@ -123,8 +123,7 @@ public class ResizeHelper {
                     /*
                     DEFINES THE ARE WHERE THE WINDOW SHOULD BE MOVEABLE WITH MOUSE
                      */
-                } else if (mouseEvent.getSceneY() < 57 && mouseEvent.getSceneX() > 212 &&
-                            stage.getWidth() - 100 > mouseEvent.getSceneX()) {
+                } else if (mouseEvent.getSceneY() < 57 && stage.getWidth() - 100 > mouseEvent.getSceneX()) {
                     stage.setX(mouseEvent.getScreenX() - xOffset);
                     stage.setY(mouseEvent.getScreenY() - yOffset);
                     stage.getScene().setCursor(Cursor.CLOSED_HAND);

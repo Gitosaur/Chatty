@@ -23,6 +23,8 @@ public class HabboInfo implements JSONSerializable {
     private int x, y; //coords in the room
 
     public HabboInfo() {
+        this.id = -1;
+        this.index = -1;
         this.imageLoading = false;
     }
 
@@ -142,4 +144,13 @@ public class HabboInfo implements JSONSerializable {
         this.x = x;
         this.y = y;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 }

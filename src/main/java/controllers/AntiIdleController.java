@@ -16,7 +16,7 @@ public class AntiIdleController {
 
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             if (this.enabled && chatty.isGearthConnected()){
-                chatty.sendToServer(new HPacket("MoveAvatar", HMessage.Direction.TOSERVER, 0, 0));
+                chatty.sendToServer(new HPacket("AvatarExpression", HMessage.Direction.TOSERVER, 0));
             }
         }, 0, waitTime, TimeUnit.SECONDS);
     }
