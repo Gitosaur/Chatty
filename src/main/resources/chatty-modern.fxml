@@ -122,6 +122,11 @@
                                                       <Font size="13.0" />
                                                    </font>
                                                 </RadioButton>
+                                                <RadioButton fx:id="muteNormalChatRadioButton" mnemonicParsing="false" prefHeight="19.0" prefWidth="133.0" text="Mute normal chat">
+                                                   <font>
+                                                      <Font size="13.0" />
+                                                   </font>
+                                                </RadioButton>
                                                 <VBox spacing="5.0">
                                                    <children>
                                                       <Label text="Typing indicator bubble">

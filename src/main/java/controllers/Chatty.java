@@ -83,6 +83,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     private boolean receiveInformationInClient;
     private boolean antiIdleEnabled;
     private boolean alwaysOnTop;
+    private boolean muteNormalChat;
+
 
     private boolean showTypingIndicator, hideTypingIndicator, hideTypingIndicatorWhenActive;
 
@@ -96,6 +98,8 @@ public class Chatty extends ExtensionForm implements Initializable {
     @FXML public RadioButton activeToggle;
     @FXML public RadioButton alwaysOnTopToggle;
     @FXML public RadioButton antiIdleRadioButton;
+    @FXML public RadioButton muteNormalChatRadioButton;
+
 
     @FXML public Circle serverStatusCircle;
     @FXML public Label serverConnectStatusLabel;
@@ -132,6 +136,8 @@ public class Chatty extends ExtensionForm implements Initializable {
 
         this.gEarthConnected = false;
         this.active = true;
+        this.muteNormalChat = false;
+
         this.showHotelsInClient = cacheController.optBool("showHotelsInClient", false);
         this.receiveInformationInClient = cacheController.optBool("receiveInformationInClient", true);
         this.antiIdleEnabled = cacheController.optBool("antiIdleEnabled", true);
@@ -211,6 +217,12 @@ public class Chatty extends ExtensionForm implements Initializable {
             this.antiIdleEnabled = newValue;
             this.cacheController.put("antiIdleEnabled", newValue);
             this.antiIdleController.setEnabled(newValue);
+        });
+
+        this.muteNormalChatRadioButton.setSelected(this.muteNormalChat);
+        this.muteNormalChatRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            this.muteNormalChat = newValue;
+            this.habboClientController.setMuteNormalChat(newValue);
         });
 
         this.updateServerStatusUi();

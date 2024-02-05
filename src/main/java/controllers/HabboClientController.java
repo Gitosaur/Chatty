@@ -26,6 +26,8 @@ public class HabboClientController {
     private List<Dummy> dummys;
     private int chatbubbleId;
 
+    private boolean muteNormalChat;
+
     public HabboClientController(Chatty chatty) {
         this.chatty = chatty;
         this.dummys = new ArrayList<Dummy>();
@@ -33,7 +35,19 @@ public class HabboClientController {
 
         this.infoDummy = new Dummy(infoDummyUserName, null,  null, infoDummyMission, infoDummyFigureStr, infoDummySex);
 
+
+        chatty.intercept(HMessage.Direction.TOCLIENT, "Chat", hMessage -> {
+            hMessage.setBlocked(muteNormalChat);
+        });
+
         chatty.intercept(HMessage.Direction.TOSERVER, "Chat", hMessage -> {
+
+            if(muteNormalChat && !chatty.isActive()){
+                sendInformationMsg("You have the normal chat muted");
+                hMessage.setBlocked(true);
+                return;
+            }
+
             HPacket packet = hMessage.getPacket();
             String text = fixEncoding(packet.readString());
             int style = packet.readInteger();
@@ -198,6 +212,10 @@ public class HabboClientController {
 
     public void setChatbubble(int id) {
         this.chatbubbleId = id;
+    }
+
+    public void setMuteNormalChat(boolean value) {
+        this.muteNormalChat = value;
     }
 
     private static class Dummy {
