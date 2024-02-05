@@ -33,7 +33,7 @@ public class ChattyLauncher extends ExtensionFormCreator {
         Image image = new Image(getClass().getResourceAsStream("/logo.png"));
         stage.getIcons().add(image);
 
-        stage.show();
+//        stage.show();
         Chatty controller = loader.getController();
         controller.setStage(stage);
 
