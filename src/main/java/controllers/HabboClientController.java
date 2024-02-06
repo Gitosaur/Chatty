@@ -42,8 +42,7 @@ public class HabboClientController {
 
         chatty.intercept(HMessage.Direction.TOSERVER, "Chat", hMessage -> {
 
-            if(muteNormalChat && !chatty.isActive()){
-                sendInformationMsg("You have the normal chat muted");
+            if(checkIfNormalChatMuted()) {
                 hMessage.setBlocked(true);
                 return;
             }
@@ -59,6 +58,12 @@ public class HabboClientController {
         });
 
         chatty.intercept(HMessage.Direction.TOSERVER, "Shout", hMessage -> {
+
+            if(checkIfNormalChatMuted()) {
+                hMessage.setBlocked(true);
+                return;
+            }
+
             HPacket packet = hMessage.getPacket();
             String text = fixEncoding(packet.readString());
             int style = packet.readInteger();
@@ -82,6 +87,14 @@ public class HabboClientController {
             hMessage.setBlocked(!chatty.showTypingSpeechBubble());
         });
 
+    }
+
+    private boolean checkIfNormalChatMuted() {
+        if(muteNormalChat && !chatty.isActive()){
+            sendInformationMsg("You have the normal chat muted");
+            return true;
+        }
+        return false;
     }
 
     private void findAndSetUserIndex(HMessage hMessage) {
