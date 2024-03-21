@@ -135,7 +135,7 @@ public class Chatty extends ExtensionForm implements Initializable {
         this.chatroomRequests = new HashMap<>();
 
         this.gEarthConnected = false;
-        this.active = true;
+        this.active = false;
         this.muteNormalChat = false;
 
         this.showHotelsInClient = cacheController.optBool("showHotelsInClient", false);
