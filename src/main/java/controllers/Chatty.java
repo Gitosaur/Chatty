@@ -53,13 +53,13 @@ import java.util.ResourceBundle;
 @ExtensionInfo(
         Title =  "Chatty",
         Description =  "Hidden chat - cross-room, cross-hotel",
-        Version =  "2.3",
+        Version =  "2.3.1",
         Author =  "Gitosaur"
 )
 public class Chatty extends ExtensionForm implements Initializable {
 
 //    private static final String DEFAULT_WS_SERVER_URL = "ws://localhost:8000";
-    private static final String DEFAULT_WS_SERVER_URL = "ws://49.13.194.116:8000";
+    private static final String DEFAULT_WS_SERVER_URL = "wss://chatty.habbodex.com";
 
     private WebsocketClient ws;
     private boolean waitForChattyServerConnection;
@@ -342,7 +342,7 @@ public class Chatty extends ExtensionForm implements Initializable {
 
 
     public void onWebsocketMessage(ChatMsg msg) {
-        System.out.println("INCOMING: " + msg);
+//        System.out.println("INCOMING: " + msg);
         String type = msg.getType();
 
         switch(type) {
@@ -717,7 +717,7 @@ public class Chatty extends ExtensionForm implements Initializable {
             System.out.println("Connected to Websocket server!!");
 
             //get the habbo index inside of room (if habbo already is inside a room)
-            System.out.println(getHabboInfo().getIndex());
+//            System.out.println(getHabboInfo().getIndex());
             if(getHabboInfo().getIndex() == -1)
                 sendToServer(new HPacket("AvatarExpression", HMessage.Direction.TOSERVER, 0));
 

@@ -8,17 +8,17 @@ import java.net.URI;
 
 public class WebsocketClient extends org.java_websocket.client.WebSocketClient{
 
-    private Chatty gchatty;
+    private Chatty chatty;
     private boolean connected;
 
-    public WebsocketClient(URI serverUri, Chatty gchatty) {
+    public WebsocketClient(URI serverUri, Chatty chatty) {
         super(serverUri);
-        this.gchatty = gchatty;
+        this.chatty = chatty;
         this.connected = false;
     }
 
     public void send(ChatMsg msg) {
-        System.out.println("SEND OUT: "+msg.toString());
+//        System.out.println("SEND OUT: "+msg.toString());
         if(connected)
             super.send(msg.toString());
     }
@@ -26,14 +26,14 @@ public class WebsocketClient extends org.java_websocket.client.WebSocketClient{
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
         this.connected = true;
-        this.gchatty.onWebsocketOpen();
+        this.chatty.onWebsocketOpen();
     }
 
     @Override
     public void onMessage(String s) {
         try {
             ChatMsg msg = ChatMsg.parse(s);
-            this.gchatty.onWebsocketMessage(msg);
+            this.chatty.onWebsocketMessage(msg);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -43,13 +43,13 @@ public class WebsocketClient extends org.java_websocket.client.WebSocketClient{
     public void onClose(int i, String s, boolean b) {
         System.out.println("CONNECTION LOST");
         this.connected = false;
-        this.gchatty.onWebsocketDisconnect();
+        this.chatty.onWebsocketDisconnect();
     }
 
     @Override
     public void onError(Exception e) {
         e.printStackTrace();
-        this.gchatty.onWebsocketError();
+        this.chatty.onWebsocketError();
     }
 
     public boolean isConnected() {
